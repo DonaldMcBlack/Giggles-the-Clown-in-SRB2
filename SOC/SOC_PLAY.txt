@@ -1,0 +1,16 @@
+Character
+SkinName = giggles
+NameTag = GIGNAMETAG
+TagTextColor = SKINCOLOR_WHITE
+TagOutlineColor = SKINCOLOR_BLACK
+OppositeColor = SKINCOLOR_BLACK
+PlayerText = ^4X Giggles^0 Placeholder
+
+Jump:  ^2Double Jump^0
+Spin: ^2Zip Dash^0
+
+^4Tips:^0 Placeholder!
+
+what
+
+At a hefty cost, hold spin in midair for your ultimate ^2what^0
