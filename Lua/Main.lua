@@ -108,7 +108,6 @@ Giggles.Dash = function(g, p, gigs)
 
         if gigs.dash.timer then
             p.pflags = $|PF_STASIS
-            g.flags = $|MF_NOGRAVITY
 
             P_InstaThrust(g, gigs.dash.angle, p.normalspeed*2)
             local ghost = P_SpawnGhostMobj(g)
@@ -120,7 +119,6 @@ Giggles.Dash = function(g, p, gigs)
             p.drawangle = R_PointToAngle2(g.x, g.y, (g.x+g.momx), (g.y+g.momy))
         else
             p.pflags = $ & ~PF_STASIS
-            g.flags = $ & ~MF_NOGRAVITY
         end
 
         if P_IsObjectOnGround(g) then

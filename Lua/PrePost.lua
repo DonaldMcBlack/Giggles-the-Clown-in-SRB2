@@ -90,6 +90,7 @@ addHook("PreThinkFrame", do
                 and gigs.dash.timer then
                     S_StartSound(g, sfx_emdsh)
                     Giggles_PlayVoice(g, p, sfx_giqg1, 50)
+                    P_SetObjectMomZ(g, FU, false)
                     p.pflags = $ & ~PF_THOKKED
                     gigs.dash.enabled = true
                     gigs.dash.angle = g.angle

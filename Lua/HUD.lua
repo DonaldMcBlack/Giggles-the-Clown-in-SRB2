@@ -4,7 +4,8 @@ alignment_value[1] = "P_"
 alignment_value[2] = "N_"
 alignment_value[3] = "S_"
 
-
+if not (rawget(_G, "customhud")) then return end
+local modname = "giggles"
 
 -- Changes the face depending on health.
 local function GetFaceStatus(gigs)
@@ -32,6 +33,9 @@ end
 
 -- Draw Giggles' health.
 local function DrawHealth(v, p, g, gigs, color)
+
+    if (customhud.CheckType("giggles-health") ~= modname) then return end
+
     local xoff = 50*FU
     local maxspace = 50*FU
 
@@ -79,6 +83,9 @@ local function DrawHealth(v, p, g, gigs, color)
 end
 
 local function DrawRings(v, p)
+
+    if (customhud.CheckType("rings") ~= modname) then return end
+
     if ultimatemode then
         return
     end
@@ -97,28 +104,62 @@ local function DrawRings(v, p)
     v.drawString(260, 30, rings, V_SNAPTORIGHT|V_SNAPTOTOP|eflag|V_PERPLAYER, "center")
 end
 
-hud.add(function(v, p)
+-- hud.add(function(v, p)
+--     if isdedicatedserver and p == server then return end
+--     if not (p.mo and p.mo.valid and p.giggletable) or (gamestate ~= GS_LEVEL) then return end
+--     local g = p.mo
+
+--     if IsGiggles(g, p) then
+--         hud.disable("lives")
+--         hud.disable("rings")
+--         hud.disable("score")
+--         hud.disable("time")
+--     else
+--         hud.enable("lives")
+--         hud.enable("rings")
+--         hud.enable("score")
+--         hud.enable("time")
+--         return
+--     end
+	
+-- 	local color = v.getColormap(g.skin, g.color)
+--     local gigs = p.giggletable
+
+--     DrawHealth(v, p, g, gigs, color)
+--     DrawRings(v, p)
+
+-- end)
+
+local unmodname = "vanilla"
+local dontdrawgiggleshud = false
+addHook("HUD", function(v, p, cam)
     if isdedicatedserver and p == server then return end
     if not (p.mo and p.mo.valid and p.giggletable) or (gamestate ~= GS_LEVEL) then return end
-    local g = p.mo
 
-    if IsGiggles(g, p) then
-        hud.disable("lives")
-        hud.disable("rings")
-        hud.disable("score")
-        hud.disable("time")
-    else
-        hud.enable("lives")
-        hud.enable("rings")
-        hud.enable("score")
-        hud.enable("time")
-        return
-    end
-	
-	local color = v.getColormap(g.skin, g.color)
+    local g = p.mo
+    local color = v.getColormap(g.skin, g.color)
     local gigs = p.giggletable
 
-    DrawHealth(v, p, g, gigs, color)
-    DrawRings(v, p)
+    if gametype == GT_SAXAMM then dontdrawgiggleshud = true end
 
+    if gigs then
+        if IsGiggles(g, p) then
+            customhud.SetupItem("rings", modname)
+            customhud.SetupItem("lives", modname)
+            customhud.SetupItem("giggles-health", modname)
+
+            customhud.disable("score")
+            customhud.disable("time")
+            customhud.disable("lives")
+            customhud.disable("rings")
+
+            if not dontdrawgiggleshud then
+                DrawHealth(v, p, g, gigs, color)
+                DrawRings(v, p)
+            end
+        else -- Not Giggles
+            customhud.SetupItem("rings", unmodname)
+            customhud.SetupItem("lives", unmodname)
+        end
+    end
 end)
