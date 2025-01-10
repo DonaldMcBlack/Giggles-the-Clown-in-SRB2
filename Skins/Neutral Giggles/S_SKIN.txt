@@ -1,7 +1,7 @@
 name = giggles
 realname = Giggles
 hudname = GIGGLES
-ability = CA_DOUBLEJUMP
+ability = CA_NONE
 ability2 = CA2_NONE
 shieldscale = 1.1
 actionspd = 25

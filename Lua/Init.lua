@@ -1,9 +1,10 @@
-rawset(_G, "Giggles", {}) -- Global table for holding functions
+rawset(_G, "Giggles", {}) -- Global table for holding functions.
 
 Giggles.NeutralMusic = nil
 Giggles.LightMusic = nil
 Giggles.DarkMusic = nil
 
+-- These are set in the S_SKIN files but they're here anyway.
 rawset(_G, "MORAL_STATS", {
 
     -- Pure
@@ -12,7 +13,7 @@ rawset(_G, "MORAL_STATS", {
 		jumpfactor = FRACUNIT*6/4, //1.5
 		normalspeed = 40*FRACUNIT,
 		runspeed = 28*FRACUNIT,
-		thrustfactor = 11,
+		thrustfactor = 11*FU,
 		accelstart = 255,
 		acceleration = 4,
         knockbackforce = FU*5
@@ -23,7 +24,7 @@ rawset(_G, "MORAL_STATS", {
 		jumpfactor = FRACUNIT*6/5, //1.2
 		normalspeed = 36*FRACUNIT,
 		runspeed = 28*FRACUNIT,
-		thrustfactor = 11,
+		thrustfactor = 11*FU,
 		accelstart = 255,
 		acceleration = 4,
         knockbackforce = FU*3
@@ -34,7 +35,7 @@ rawset(_G, "MORAL_STATS", {
 		jumpfactor = FRACUNIT*6/5, //1.2
 		normalspeed = 36*FRACUNIT,
 		runspeed = 28*FRACUNIT,
-		thrustfactor = 11,
+		thrustfactor = 11*FU,
 		accelstart = 255,
 		acceleration = 4,
         knockbackforce = FU
@@ -79,16 +80,12 @@ Giggles.Setup = function(p)
 
             -- Logic
             grounded = true,
-            justjumped = false,
 			sprinting = false,
+            justjumped = false,
 
             dash = { enabled = false, timer = 10, timerref = 10, angle = 0 },
 
-            groundpound = { enabled = false, canperform = false, stuntime = 10, stuntimeref = 10 },
-
-            doublejumped = false,
-
-            frontflip = { flipping = false, duration = 0, durationref = 9 },
+            groundpound = { enabled = false, canperform = false, stuntime = 5, stuntimeref = 5 },
 
             knockedback = false,
 
@@ -118,7 +115,5 @@ Giggles.Setup = function(p)
             layeredmusic = false,
         }
     end
-
-    CONS_Printf(p, "Giggles the clown has come to town.")
     return true
 end
