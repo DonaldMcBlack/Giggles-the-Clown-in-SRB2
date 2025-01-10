@@ -20,6 +20,9 @@ addHook("PreThinkFrame", do
             gigs.c1 = (p.cmd.buttons & BT_CUSTOM1) and $+1 or 0
             gigs.c2 = (p.cmd.buttons & BT_CUSTOM2) and $+1 or 0
             gigs.c3 = (p.cmd.buttons & BT_CUSTOM3) and $+1 or 0
+
+            gigs.firenormal = (p.cmd.buttons & BT_FIRENORMAL) and $+1 or 0
+            gigs.fire = (p.cmd.buttons & BT_ATTACK) and $+1 or 0
         end
 
         if g then
@@ -29,7 +32,27 @@ addHook("PreThinkFrame", do
                 gigs.sprinting = false
             end
 
-            -- For ground actions
+            if gigs.c1 == 1 then
+                P_SetObjectMomZ(g, abs(g.momz), true)
+            end
+            
+            if gigs.firenormal == 1 then P_SpawnMobjFromMobj(g, g.x+10, 0, 0, MT_HEARTRING) end
+
+            if gigs.firenormal >= 5 or gigs.fire >= 5 then
+                p.drawangle = R_PointToAngle(g.x+FixedMul(cos(g.angle), 64<<FRACBITS), g.y+FixedMul(sin(g.angle), 64<<FRACBITS))
+
+                local spray = P_SpawnPlayerMissile(g, MT_REDRING)
+
+                if gigs.firenormal and not gigs.fire then
+                    spray.color = SKINCOLOR_SKY
+                elseif not gigs.firenormal and gigs.fire then
+                    spray.color = SKINCOLOR_GREEN
+                end
+                
+                P_InstaThrust(spray, camera.angle, FU*10)
+            end
+
+            -- For ground only actions
             if P_IsObjectOnGround(g) then
                 -- Dash
                 if gigs.spin == 1 
@@ -39,11 +62,12 @@ addHook("PreThinkFrame", do
                     Giggles_PlayVoice(g, p, sfx_giqg1, 50)
                     gigs.dash.enabled = true
                     gigs.dash.angle = g.angle
+                    gigs.dash.aerial = false
                     Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, true, 16, FU*4, p.drawangle)
                 end
             end
 
-            -- For air actions
+            -- For air only actions
             if not P_IsObjectOnGround(g) then
                 -- Ground pound
                 if gigs.c3 == 1
@@ -62,15 +86,24 @@ addHook("PreThinkFrame", do
                 if g.skin == "gigglespure"
                 and gigs.spin == 1
                 and not gigs.dash.enabled
-                and not gigs.groundpound.enabled then
+                and not gigs.groundpound.enabled
+                and gigs.dash.timer then
                     S_StartSound(g, sfx_emdsh)
                     Giggles_PlayVoice(g, p, sfx_giqg1, 50)
                     p.pflags = $ & ~PF_THOKKED
                     gigs.dash.enabled = true
                     gigs.dash.angle = g.angle
+                    gigs.dash.aerial = true
                     Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, true, 16, FU*4, p.drawangle)
                 end
             end
+        end
+
+        if Giggles_NET.inbossmap then
+            if S_IdPlaying(sfx_stboss) then S_PauseMusic(consoleplayer)
+            else S_ResumeMusic(consoleplayer) end
+        else
+            Giggles.MusicLayerChange(p, gigs)
         end
     end
 end)
@@ -88,7 +121,9 @@ addHook("ThinkFrame", do
         if P_IsObjectOnGround(g) then 
             gigs.grounded = true
             gigs.falling = false  
-            gigs.justjumped = false      
+            gigs.justjumped = false    
+            
+            if not gigs.dash.timer and not gigs.dash.enabled then gigs.dash.timer = gigs.dash.timerref end
         elseif not p.powers[pw_carry] 
         and not (p.pflags & PF_JUMPED) 
         and not gigs.dash.enabled
@@ -98,7 +133,9 @@ addHook("ThinkFrame", do
             gigs.grounded = false
             p.pflags = $ | PF_JUMPED
             gigs.falling = true
-            g.state = S_PLAY_FALL
+            gigs.justjumped = true
+
+            if g.state ~= S_PLAY_PAIN then g.state = S_PLAY_FALL end
         end
     end
 end)

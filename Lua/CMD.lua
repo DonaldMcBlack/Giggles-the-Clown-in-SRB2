@@ -30,6 +30,22 @@ COM_AddCommand("giggles_alignment", function(p, phase)
     
 end)
 
+COM_AddCommand("giggles_setmaxhealth", function(p, num)
+    if gamestate ~= GS_LEVEL or not p.giggletable then CONS_Printf(p, "You can't do this right now.") return end
+    if not IsGiggles(p.mo) then CONS_Printf(p, "You use rings, silly.") return end
+
+    local gigs = p.giggletable
+    num = tonumber(num)
+
+    if num <= 0 then
+        CONS_Printf(p, "Can't do that.")
+
+    else
+        gigs.maxhealthpips = num
+        CONS_Printf(p, "Max health changed!")
+    end
+end)
+
 COM_AddCommand("giggles_heal", function(p, num)
     if gamestate ~= GS_LEVEL or not p.giggletable then CONS_Printf(p, "You can't do this right now.") return end
     if not IsGiggles(p.mo) then CONS_Printf(p, "You use rings, silly.") return end

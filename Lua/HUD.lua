@@ -5,7 +5,33 @@ alignment_value[2] = "N_"
 alignment_value[3] = "S_"
 
 
-local function DrawHealth(v, g, gigs, color)
+
+-- Changes the face depending on health.
+local function GetFaceStatus(gigs)
+    if gigs.healthpips > 0 then
+        local healthamount = gigs.healthpips*FU
+        local maxhealth = gigs.maxhealthpips*FU
+
+        local halfhealth = FixedRound(FixedDiv(maxhealth, 2*FU))
+
+        -- CONS_Printf(consoleplayer, "Current health is: " + healthamount + " Actual half health is: " + halfhealth)
+
+        if healthamount == maxhealth then 
+            return 5
+        else
+            if healthamount > halfhealth then return 4
+            elseif healthamount == (halfhealth) then return 3
+            elseif healthamount >= FixedDiv(maxhealth, 4*FU) then return 2
+            elseif healthamount < FixedDiv(maxhealth, 4*FU) then return 1
+            end
+        end
+    else
+        return 1
+    end
+end
+
+-- Draw Giggles' health.
+local function DrawHealth(v, p, g, gigs, color)
     local xoff = 50*FU
     local maxspace = 50*FU
 
@@ -21,7 +47,7 @@ local function DrawHealth(v, g, gigs, color)
 	v.drawScaled(0, 0, 2*FU/4, patch, healthflags|backflag)
 	
 	-- Then face
-	patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "FACE"))
+	patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "FACE" + tostring(GetFaceStatus(gigs))))
 	
 	v.drawScaled(-10*FU/5, -12*FU, 2*FU/4, patch, healthflags|frontflag, color)
 	
@@ -48,6 +74,8 @@ local function DrawHealth(v, g, gigs, color)
 
         v.drawScaled(maxspace-(incre)+xoff, 35*FU+add, FU/4, patch, healthflags|frontflag)
     end
+
+    v.drawString(55, 55, ("x ") + p.lives, V_SNAPTOLEFT|V_SNAPTOTOP|V_HUDTRANS|V_PERPLAYER)
 end
 
 local function DrawRings(v, p)
@@ -90,7 +118,7 @@ hud.add(function(v, p)
 	local color = v.getColormap(g.skin, g.color)
     local gigs = p.giggletable
 
-    DrawHealth(v, g, gigs, color)
+    DrawHealth(v, p, g, gigs, color)
     DrawRings(v, p)
 
 end)

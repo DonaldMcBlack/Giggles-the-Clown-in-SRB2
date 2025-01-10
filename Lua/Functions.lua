@@ -26,6 +26,28 @@ Giggles.ManageHealth = function(gigs, oper, num)
     end
 end
 
+Giggles.SpawnDustCircle = function(mo, dusttype, rot, vertical, amount, range, pitch)
+    for i = 0, amount do
+        local left = amount-(i-1)
+        local another_angle = 360*(FU/amount)
+        local angle = FixedAngle(another_angle*left)
+
+        local z = (mo.height/2)-((mo.height/2)*P_MobjFlip(mo))
+
+        local particle = P_SpawnMobjFromMobj(mo, 0, 0, z, dusttype)
+        if particle and particle.valid then
+            if vertical then
+                particle.momz = FixedMul(sin(angle), rot)
+                P_InstaThrust(particle, pitch+ANGLE_90,
+                FixedMul(cos(angle),rot))
+            else
+                particle.momx = FixedMul(sin(angle),rot)
+                particle.momy = FixedMul(cos(angle),rot)
+            end    
+        end
+    end
+end
+
 Giggles.AlignmentCheck = function(p, gigs)
 
     local ChangeCheck = false
@@ -51,16 +73,15 @@ Giggles.AlignmentCheck = function(p, gigs)
     if ChangeCheck then
         R_SetPlayerSkin(p, GET_MORAL_STATS(p, "skinname"))
         gigs.knockbackforce = GET_MORAL_STATS(p, "knockbackforce")
-        Giggles.MusicLayerChange(p, gigs)
     end
 end
 
 Giggles.MusicLayerChange = function(p, gigs)
-    local CurrentLayer
-    if gigs.alignment.phase == 1 then CurrentLayer = Giggles.LightMusic end
-    if gigs.alignment.phase == 2 then CurrentLayer = Giggles.NeutralMusic end
-    if gigs.alignment.phase == 3 then CurrentLayer = Giggles.DarkMusic end
+    if not gigs.musiclayers.enabled or not gigs.musiclayers.canplay then return end -- You shouldn't be playing
 
+    if p.powers[pw_invulnerability] or p.powers[pw_sneakers] or p.powers[pw_extralife] then return end -- We want to hear the jingles!
+
+    local CurrentLayer = gigs.musiclayers.layers[gigs.alignment.phase]
     S_ChangeMusic(CurrentLayer, true, p, nil, S_GetMusicPosition())
 end
 

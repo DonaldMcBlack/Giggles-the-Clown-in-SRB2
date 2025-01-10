@@ -1,8 +1,9 @@
 rawset(_G, "Giggles", {}) -- Global table for holding functions.
 
-Giggles.NeutralMusic = nil
-Giggles.LightMusic = nil
-Giggles.DarkMusic = nil
+rawset(_G, "Giggles_NET", {
+    inbossmap = false,
+    playedbossintro = false
+})
 
 -- These are set in the S_SKIN files but they're here anyway.
 rawset(_G, "MORAL_STATS", {
@@ -83,11 +84,12 @@ Giggles.Setup = function(p)
 			sprinting = false,
             justjumped = false,
 
-            dash = { enabled = false, timer = 10, timerref = 10, angle = 0 },
+            dash = { enabled = false, timer = 10, timerref = 10, angle = 0, aerial = false },
 
             groundpound = { enabled = false, canperform = false, stuntime = 5, stuntimeref = 5 },
 
             knockedback = false,
+            fallmomz = 0,
 
             -- Buttons
             jump = (p.cmd.buttons & BT_JUMP) and 1 or 0,
@@ -98,6 +100,9 @@ Giggles.Setup = function(p)
 
             weaponprev = (p.cmd.buttons & BT_WEAPONPREV) and 1 or 0,
             weaponnext = (p.cmd.buttons & BT_WEAPONNEXT) and 1 or 0,
+
+            firenormal = (p.cmd.buttons & BT_FIRENORMAL) and 1 or 0,
+            fire = (p.cmd.buttons & BT_ATTACK) and 1 or 0,
 			
 			tossflag = (p.cmd.buttons & BT_TOSSFLAG) and 1 or 0,
 
@@ -112,7 +117,7 @@ Giggles.Setup = function(p)
             -- Misc
             camerascale = FU*6/5,
             knockbackforce = FU*3/2,
-            layeredmusic = false,
+            musiclayers = { enabled = true, canplay = true, layers = {[1] = "light", [2] = "neutral", [3] = "dark"}}
         }
     end
     return true

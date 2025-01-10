@@ -1,3 +1,12 @@
+-- TODO -------------------------------------------
+-- Spin Attack
+-- Working Magimajigs
+-- Charge spin attack for Scrapper
+-- Fix the dive for Pure
+-- [Done]Dive jump for Pure
+-- Optional battle music
+---------------------------------------------------
+
 local Giggles = Giggles
 
 local transformation_sounds = {}
@@ -37,59 +46,92 @@ end
 -- Giggles.SpinAttack = function(g, p, gigs)
 
 -- end
-
 Giggles.Dash = function(g, p, gigs)
+    CONS_Printf(p, "Dash Time: " + tostring(gigs.dash.timer) + "Is Aerial: " + gigs.dash.aerial)
 
-    if gigs.jump == 1 and gigs.justjumped or (g.eflags & MFE_SPRUNG) then
-        p.pflags = $ & ~PF_STASIS
-        g.flags = $ & ~MF_NOGRAVITY
+    -- Main dash
+    if not gigs.dash.aerial then
+        -- Dash Cancel
+        if gigs.jump == 1 and not gigs.justjumped or (g.eflags & MFE_SPRUNG) then
+        
+            p.pflags = $ & ~PF_STASIS
+            g.flags = $ & ~MF_NOGRAVITY
+            if g.skin == "gigglesscrapper" then p.powers[pw_strong] = $ & ~dshstrong_flags end
 
-        if g.skin == "gigglesscrapper" then p.powers[pw_strong] = $ & ~dshstrong_flags end
-
-        if gigs.jump == 1 and gigs.justjumped then 
-            P_DoJump(p, true) 
-            g.momx = $%2 
-            g.momy = $%2
-        end
-        gigs.dash.enabled = false
-    end
-
-    if gigs.dash.timer then 
-        P_InstaThrust(g, gigs.dash.angle, p.normalspeed*2)
-        if g.skin == "gigglesscrapper" then p.powers[pw_strong] = $|dshstrong_flags end
-
-        local ghost = P_SpawnGhostMobj(g)
-        ghost.fuse = 5
-        ghost.scalespeed = FU/15
-        ghost.destscale = 0
-
-        gigs.dash.timer = max(0, $-1)
-        g.state = S_GIGGLES_DASH
-        p.drawangle = R_PointToAngle2(g.x, g.y, (g.x+g.momx), (g.y+g.momy))
-    else
-        p.pflags = $ & ~PF_STASIS
-        g.flags = $ & ~MF_NOGRAVITY
-
-        if g.skin == "gigglespure" and P_IsObjectOnGround(g)
-        or g.skin == "gigglespure" and p.pflags & PF_THOKKED then
+            if gigs.jump == 1 and not gigs.justjumped then 
+            
+                P_DoJump(p, true) 
+                g.momx = $%2 
+                g.momy = $%2
+                gigs.justjumped = true
+                S_StartSound(g, sfx_emjmp)
+            end
             gigs.dash.enabled = false
-            g.state = S_PLAY_FALL
+            gigs.dash.timer = gigs.dash.timerref
+            return
         end
+        
+        if gigs.dash.timer then 
+            p.pflags = $|PF_STASIS
+            g.flags = $|MF_NOGRAVITY
 
-        if g.skin == "gigglesscrapper" then p.powers[pw_strong] = $ & ~dshstrong_flags end
+            P_InstaThrust(g, gigs.dash.angle, p.normalspeed*2)
+            local ghost = P_SpawnGhostMobj(g)
+            ghost.fuse = 5
+            ghost.scalespeed = FU/15
+            ghost.destscale = 0
+        
+            if g.skin == "gigglesscrapper" then p.powers[pw_strong] = $|dshstrong_flags end
+            
+            gigs.dash.timer = max(0, $-1)
+            g.state = S_GIGGLES_DASH
+            p.drawangle = R_PointToAngle2(g.x, g.y, (g.x+g.momx), (g.y+g.momy))
+    
+        else
+            p.pflags = $ & ~PF_STASIS
+            g.flags = $ & ~MF_NOGRAVITY
 
-        if g.skin ~= "gigglespure" or g.skin ~= "gigglespure" and P_IsObjectOnGround(g) then
+            gigs.dash.enabled = false
+            gigs.dash.timer = gigs.dash.timerref
             g.momx = 0
             g.momy = 0
-            gigs.dash.enabled = false
 
+            -- Remove Scrapper's strong flags
+            if g.skin == "gigglesscrapper" then p.powers[pw_strong] = $ & ~dshstrong_flags end
+
+            -- Leave dash state
             if P_IsObjectOnGround(g) then g.state = S_PLAY_STND
             else g.state = S_PLAY_FALL end
         end
-    end
+    else -- Air dash for Pure Giggles
+        g.state = S_GIGGLES_DASH
 
-    -- Easy timer reset
-    if not gigs.dash.enabled then gigs.dash.timer = gigs.dash.timerref end
+        if gigs.dash.timer then
+            p.pflags = $|PF_STASIS
+            g.flags = $|MF_NOGRAVITY
+
+            P_InstaThrust(g, gigs.dash.angle, p.normalspeed*2)
+            local ghost = P_SpawnGhostMobj(g)
+            ghost.fuse = 5
+            ghost.scalespeed = FU/15
+            ghost.destscale = 0
+
+            gigs.dash.timer = max(0, $-1)
+            p.drawangle = R_PointToAngle2(g.x, g.y, (g.x+g.momx), (g.y+g.momy))
+        else
+            p.pflags = $ & ~PF_STASIS
+            g.flags = $ & ~MF_NOGRAVITY
+        end
+
+        if P_IsObjectOnGround(g) then
+            gigs.dash.enabled = false -- Let the hook deal with it, it's fine.
+            gigs.dash.timer = gigs.dash.timerref
+            g.state = S_PLAY_STND or S_PLAY_WALK
+        elseif p.pflags & PF_THOKKED then 
+            gigs.dash.enabled = false 
+            g.state = S_GIGGLES_DOUBLEJUMP
+        end
+    end
 end
 
 local function DoDustTrail(g)
@@ -229,8 +271,22 @@ addHook("PlayerThink", function(p)
 	    S_StartSound(g, transformation_sounds[gigs.alignment.phase])
 		gigs.alignment.lastphase = gigs.alignment.phase
 	end
-	
-	-- if g.momz < -FU and (g.eflags & MFE_JUSTHITFLOOR) then S_StartSound(g, sfx_land1) end
+
+    if not P_IsObjectOnGround(g) and g.momz < 0 then
+        gigs.fallmomz = g.momz
+		-- CONS_Printf(p, tostring(g.momz))
+    elseif abs(gigs.fallmomz) >= p.height/4 and (g.eflags & MFE_JUSTHITFLOOR) and not gigs.groundpound.enabled then
+        S_StartSound(g, P_RandomRange(sfx_land1, sfx_land3))
+        Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, false, 8, FU*4, 0)
+        gigs.fallmomz = 0
+    else
+	    gigs.fallmomz = 0
+	end
+
+    if g.eflags & MFE_SPRUNG then
+        p.pflags = $|PF_JUMPED
+        gigs.justjumped = true
+    end
 	
     -- Sprinting, since she's too slow
 	if gigs.sprinting and P_IsObjectOnGround(g) then
@@ -246,33 +302,88 @@ addHook("PlayerThink", function(p)
     end
 
     if gigs.dash.enabled then
-        p.pflags = $|PF_STASIS
-        g.flags = $|MF_NOGRAVITY
         Giggles.Dash(g, p, gigs)
     end
 end)
 
 addHook("MapChange", function(map)
-    -- Music layer stuff, it's optional
+    if mapheaderinfo[map].bonustype == 1 then
+        Giggles_NET.inbossmap = true
+    else Giggles_NET.inbossmap = false end
+end)
+
+addHook("MapLoad", function(map)
+    if Giggles_NET.inbossmap then 
+        S_PauseMusic(consoleplayer)
+        S_StartSound(nil, sfx_stboss, consoleplayer) 
+    end
+
+    -- Music layer stuff, it's optional and not necessary.
     if mapheaderinfo[map].layered_music ~= nil and mapheaderinfo[map].layered_music == "true" then
 
-        if mapheaderinfo[map].giggles_light == nil or mapheaderinfo[map].giggles_dark == nil then
-            return
+        -- Do this for every player...
+        for p in players.iterate do
+            local gigs = p.giggletable
+
+            local mapmus = mapheaderinfo[map].musname
+            
+            -- Do this first to help with not requiring manual SOC inclusion.
+            if string.sub(mapmus, 1, 1) == "N" then
+
+                local normalmus = string.sub(mapmus, 2, string.len(mapmus))
+
+                gigs.musiclayers.layers[1] = "L" + normalmus
+                gigs.musiclayers.layers[2] = mapmus
+                gigs.musiclayers.layers[3] = "D" + normalmus
+
+                if S_MusicExists(gigs.musiclayers.layers[1]) and S_MusicExists(gigs.musiclayers.layers[3]) then
+                    gigs.musiclayers.canplay = true
+                    Giggles.MusicLayerChange(p, gigs)
+                    continue
+                elseif mapheaderinfo[map].lightmusname ~= nil or mapheaderinfo[map].darkmusname ~= nil then -- Fall back on SOC if previous method didn't work
+                    gigs.musiclayers.canplay = true
+                    gigs.musiclayers.layers[1] = mapheaderinfo[map].giggles_light
+                    gigs.musiclayers.layers[2] = mapheaderinfo[map].musname
+                    gigs.musiclayers.layers[3] = mapheaderinfo[map].giggles_dark
+
+                    Giggles.MusicLayerChange(p, gigs)
+                    continue
+                    
+                else -- If there is no music found
+                    gigs.musiclayers.canplay = false
+
+                    gigs.musiclayers.layers[1] = nil
+                    gigs.musiclayers.layers[2] = nil
+                    gigs.musiclayers.layers[3] = nil
+
+                    continue
+                end
+            else
+                gigs.musiclayers.canplay = false
+                gigs.musiclayers.layers[1] = nil
+                gigs.musiclayers.layers[2] = nil
+                gigs.musiclayers.layers[3] = nil
+
+                continue
+            end
         end
 
-        Giggles.LightMusic = mapheaderinfo[map].giggles_light
-        Giggles.NeutralMusic = mapheaderinfo[map].musname
-        Giggles.DarkMusic = mapheaderinfo[map].giggles_dark
     else
-        Giggles.LightMusic = nil
-        Giggles.NeutralMusic = nil
-        Giggles.DarkMusic = nil
+        -- Do something about this if music is reworked.
+        for p in players.iterate do
+            local gigs = p.giggletable
+
+            gigs.musiclayers.canplay = false
+
+            gigs.musiclayers.layers[1] = nil
+            gigs.musiclayers.layers[2] = nil
+            gigs.musiclayers.layers[3] = nil
+        end
     end
 end)
 
 addHook("PlayerSpawn", function(p)
     if not (p.mo and p.mo.valid) then return end
-    
     if not (p.giggletable) then Giggles.Setup(p) end -- No table? We'll fix that.
 
     if IsGiggles(p.mo, p) and p.giggletable and not p.spectator then
