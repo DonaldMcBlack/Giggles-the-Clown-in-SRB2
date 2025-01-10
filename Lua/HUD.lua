@@ -16,12 +16,12 @@ local function DrawHealth(v, g, gigs, color)
 	local healthflags = V_SNAPTOLEFT|V_SNAPTOTOP|V_PERPLAYER
 	
 	-- Draw HP bar first
-	local patch = v.cachePatch((alignment_value[gigs.alignmentphase] + "HPBAR"))
+	local patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "HPBAR"))
 	
 	v.drawScaled(0, 0, 2*FU/4, patch, healthflags|backflag)
 	
 	-- Then face
-	patch = v.cachePatch((alignment_value[gigs.alignmentphase] + "FACE"))
+	patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "FACE"))
 	
 	v.drawScaled(55*FU/5, -12*FU, 2*FU/4, patch, healthflags|frontflag, color)
 	
@@ -31,9 +31,9 @@ local function DrawHealth(v, g, gigs, color)
 
         -- Patch time! 
         if gigs.maxhealthpips - i > gigs.healthpips - 1 then 
-            patch = v.cachePatch((alignment_value[gigs.alignmentphase] + "HPDED"))
+            patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "HPDED"))
         else
-            patch = v.cachePatch((alignment_value[gigs.alignmentphase] + "HPLIV"))
+            patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "HPLIV"))
         end
 
         -- Always make the first pip displayed go down
