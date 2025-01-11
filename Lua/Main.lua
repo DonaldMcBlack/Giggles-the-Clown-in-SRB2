@@ -33,12 +33,17 @@ Giggles.Knockback = function(p)
         local g = p.mo
         local gigs = p.giggletable
 
-        local multiplier = gigs.knockbackforce
+        if g.skin == "giggles" then return end
+
+        local multiplier
+
+        if g.skin == "gigglespure" then multiplier = FU*5
+        elseif g.skin == "gigglesscrapper" then multiplier = FU end
 
         g.momx = FixedMul(multiplier, $)
         g.momy = FixedMul(multiplier, $)
 
-        CONS_Printf(p, "Knockback")
+        -- CONS_Printf(p, "Knockback")
         gigs.knockedback = false
     end
 end
@@ -47,7 +52,7 @@ end
 
 -- end
 Giggles.Dash = function(g, p, gigs)
-    CONS_Printf(p, "Dash Time: " + tostring(gigs.dash.timer) + "Is Aerial: " + gigs.dash.aerial)
+    -- CONS_Printf(p, "Dash Time: " + tostring(gigs.dash.timer) + "Is Aerial: " + gigs.dash.aerial)
 
     -- Main dash
     if not gigs.dash.aerial then
@@ -230,7 +235,7 @@ Giggles.GroundPound = function(p, g, gigs)
 		g.spritexscale = FU-scale
 	end
 
-    CONS_Printf(p, tostring(gigs.groundpound.stuntime))
+    -- CONS_Printf(p, tostring(gigs.groundpound.stuntime))
 
     if not (gigs.groundpound.stuntime) then
         gigs.groundpound.enabled = false
@@ -289,9 +294,9 @@ addHook("PlayerThink", function(p)
     -- Sprinting, since she's too slow
 	if gigs.sprinting and P_IsObjectOnGround(g) then
         DoDustTrail(g)
-        p.normalspeed = GET_MORAL_STATS(p, "normalspeed")
+        p.normalspeed = skins[g.skin].normalspeed
     elseif not gigs.sprinting and P_IsObjectOnGround(g) then
-        p.normalspeed = GET_MORAL_STATS(p, "normalspeed")/2
+        p.normalspeed = skins[g.skin].normalspeed/2
     end
 
     if gigs.groundpound.enabled then
@@ -304,18 +309,7 @@ addHook("PlayerThink", function(p)
     end
 end)
 
-addHook("MapChange", function(map)
-    if mapheaderinfo[map].bonustype == 1 then
-        Giggles_NET.inbossmap = true
-    else Giggles_NET.inbossmap = false end
-end)
-
-addHook("MapLoad", function(map)
-    if Giggles_NET.inbossmap then 
-        S_PauseMusic(consoleplayer)
-        S_StartSound(nil, sfx_stboss, consoleplayer) 
-    end
-
+local function LoadMusicLayers(map)
     -- Music layer stuff, it's optional and not necessary.
     if mapheaderinfo[map].layered_music ~= nil and mapheaderinfo[map].layered_music == "true" then
 
@@ -378,6 +372,21 @@ addHook("MapLoad", function(map)
             gigs.musiclayers.layers[3] = nil
         end
     end
+end
+
+addHook("MapChange", function(map)
+    if mapheaderinfo[map].bonustype == 1 then
+        Giggles_NET.inbossmap = true
+    else Giggles_NET.inbossmap = false end
+end)
+
+addHook("MapLoad", function(map)
+    if Giggles_NET.inbossmap then 
+        S_PauseMusic(consoleplayer)
+        S_StartSound(nil, sfx_stboss, consoleplayer) 
+    end
+
+    LoadMusicLayers(map)
 end)
 
 addHook("PlayerSpawn", function(p)
@@ -466,11 +475,16 @@ addHook("AbilitySpecial", function(p)
         S_StartSound(g, sfx_emjmp2)
         Giggles_PlayVoice(g, p, P_RandomRange(sfx_givoc5, sfx_givoc8), 40)
 
-        local doublejumpfactor = GET_MORAL_STATS(p, "thrustfactor")
+        local djfactor = 10*FU
+        local jfactor = min(FixedDiv(p.jumpfactor, skins[g.skin].jumpfactor), FU)
+        
+        if gigs.dash.enabled and g.skin == "gigglespure" then djfactor = $/4 end
 
-        if gigs.dash.enabled and g.skin == "gigglespure" then doublejumpfactor = $/2 end
+        if g.eflags & MFE_UNDERWATER or g.eflags & MFE_GOOWATER then djfactor = $ - ($/3) end
 
-        Giggles.JumpManager(g, doublejumpfactor)
+        P_DoJump(p, false)
+        P_SetObjectMomZ(g, FixedMul(djfactor, jfactor))
+        
         g.state = S_GIGGLES_DOUBLEJUMP
         p.pflags = $ | PF_THOKKED
     end

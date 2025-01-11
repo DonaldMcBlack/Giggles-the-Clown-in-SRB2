@@ -1,6 +1,6 @@
 local Giggles = Giggles
 
-local CLINS = { "giggles", "gigglesscrapper", "gigglespure"}
+local CLINS = { "gigglespure", "giggles", "gigglesscrapper"}
 rawset(_G, "IsGiggles", function(g, p)
     if p then -- For if the mo is not valid
         local SKIN = skins[p.skin]
@@ -71,8 +71,7 @@ Giggles.AlignmentCheck = function(p, gigs)
     end
 
     if ChangeCheck then
-        R_SetPlayerSkin(p, GET_MORAL_STATS(p, "skinname"))
-        gigs.knockbackforce = GET_MORAL_STATS(p, "knockbackforce")
+        R_SetPlayerSkin(p, CLINS[gigs.alignment.phase])
     end
 end
 

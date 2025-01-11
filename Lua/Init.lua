@@ -5,56 +5,6 @@ rawset(_G, "Giggles_NET", {
     playedbossintro = false
 })
 
--- These are set in the S_SKIN files but they're here anyway.
-rawset(_G, "MORAL_STATS", {
-
-    -- Pure
-    [1] = {
-        skinname = "gigglespure",
-		jumpfactor = FRACUNIT*6/4, //1.5
-		normalspeed = 40*FRACUNIT,
-		runspeed = 28*FRACUNIT,
-		thrustfactor = 11*FU,
-		accelstart = 255,
-		acceleration = 4,
-        knockbackforce = FU*5
-    },
-    -- Neutral
-    [2] = {
-        skinname = "giggles",
-		jumpfactor = FRACUNIT*6/5, //1.2
-		normalspeed = 36*FRACUNIT,
-		runspeed = 28*FRACUNIT,
-		thrustfactor = 11*FU,
-		accelstart = 255,
-		acceleration = 4,
-        knockbackforce = FU*3
-    },
-    -- Scrapper
-    [3] = {
-        skinname = "gigglesscrapper",
-		jumpfactor = FRACUNIT*6/5, //1.2
-		normalspeed = 36*FRACUNIT,
-		runspeed = 28*FRACUNIT,
-		thrustfactor = 11*FU,
-		accelstart = 255,
-		acceleration = 4,
-        knockbackforce = FU
-    }
-})
-
-rawset(_G, "SET_MORAL_STATS", function(form, oldstat, newstat)
-    MORAL_STATS[form][oldstat] = newstat
-end)
-
-rawset(_G, "GET_MORAL_STATS", function(p, stat)
-    if stat ~= nil then
-        return MORAL_STATS[p.giggletable.alignment.phase][stat]
-    else
-        return MORAL_STATS[p.giggletable.alignment.phase]
-    end
-end)
-
 -- g for the mo, p for the player if mo is empty, insert a string for the clip and chance is for how common.
 rawset(_G, "Giggles_PlayVoice", function(g, p, clip, chance)
     if not p.giggletable.voice then return end -- Can't say anything if you're muted dummy
@@ -107,8 +57,43 @@ Giggles.Setup = function(p)
 			tossflag = (p.cmd.buttons & BT_TOSSFLAG) and 1 or 0,
 
             -- Magicmobjs
-            magicmobjspawn = { enabled = false, canperform = true },
-            magicmobjs = { tv = 5, watch = 5, anvil = 5, balloon = 5, fireworks = 5},
+            magicmobjspawn = { enabled = false, canperform = true, selectednum = 0 },
+            magicmobjs = {
+                [0] = {
+                    name = "TV",
+                    -- type = MT_TV,
+                    amount = 5,
+                    duration = 15
+                },
+
+                [1] = {
+                    name = "Watch",
+                    -- type = MT_WATCH,
+                    amount = 5,
+                    duration = 15
+                },
+                
+                [2] = {
+                    name = "Anvil",
+                    -- type = MT_ANVIL,
+                    amount = 5,
+                    duration = 10
+                },
+
+                [3] = {
+                    name = "Balloon",
+                    -- type = MT_CLOWN_BALLOON,
+                    amount = 5,
+                    duration = -1
+                },
+
+                [4] = {
+                    name = "Fireworks",
+                    -- type = MT_FIREWORKS,
+                    amount = 5,
+                    duration = -1
+                }
+            },
 
             -- Options
             voice = true,
@@ -116,8 +101,7 @@ Giggles.Setup = function(p)
 
             -- Misc
             camerascale = FU*6/5,
-            knockbackforce = FU*3/2,
-            musiclayers = { enabled = true, canplay = true, layers = {[1] = "light", [2] = "neutral", [3] = "dark"}}
+            musiclayers = { enabled = true, canplay = true, layers = {[1] = "L", [2] = "N", [3] = "D"}}
         }
     end
     return true

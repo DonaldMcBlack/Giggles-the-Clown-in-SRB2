@@ -104,6 +104,17 @@ local function DrawRings(v, p)
     v.drawString(260, 30, rings, V_SNAPTORIGHT|V_SNAPTOTOP|eflag|V_PERPLAYER, "center")
 end
 
+local function DrawMagicMobjs(v, p)
+
+    if (customhud.CheckType("giggles-magicmobjs") ~= modname) then return end
+
+    local gigs = p.giggletable
+
+    local objectname = gigs.magicmobjs[gigs.magicmobjspawn.selectednum].name
+
+    v.drawString(50, 150, objectname, V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|V_PERPLAYER, "center")
+end
+
 -- hud.add(function(v, p)
 --     if isdedicatedserver and p == server then return end
 --     if not (p.mo and p.mo.valid and p.giggletable) or (gamestate ~= GS_LEVEL) then return end
@@ -147,6 +158,7 @@ addHook("HUD", function(v, p, cam)
             customhud.SetupItem("rings", modname)
             customhud.SetupItem("lives", modname)
             customhud.SetupItem("giggles-health", modname)
+            customhud.SetupItem("giggles-magicmobjs", modname)
 
             customhud.disable("score")
             customhud.disable("time")
@@ -156,6 +168,7 @@ addHook("HUD", function(v, p, cam)
             if not dontdrawgiggleshud then
                 DrawHealth(v, p, g, gigs, color)
                 DrawRings(v, p)
+                DrawMagicMobjs(v, p)
             end
         else -- Not Giggles
             customhud.SetupItem("rings", unmodname)

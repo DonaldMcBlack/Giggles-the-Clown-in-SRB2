@@ -21,6 +21,9 @@ addHook("PreThinkFrame", do
             gigs.c2 = (p.cmd.buttons & BT_CUSTOM2) and $+1 or 0
             gigs.c3 = (p.cmd.buttons & BT_CUSTOM3) and $+1 or 0
 
+            gigs.weaponprev = (p.cmd.buttons & BT_WEAPONPREV) and $+1 or 0
+            gigs.weaponnext = (p.cmd.buttons & BT_WEAPONNEXT) and $+1 or 0
+
             gigs.firenormal = (p.cmd.buttons & BT_FIRENORMAL) and $+1 or 0
             gigs.fire = (p.cmd.buttons & BT_ATTACK) and $+1 or 0
         end
@@ -35,7 +38,16 @@ addHook("PreThinkFrame", do
             if gigs.c1 == 1 then
                 P_SetObjectMomZ(g, abs(g.momz), true)
             end
-            
+
+            -- Extend this so it doesn't exceed 0 or length
+            local currentmagicmobj = gigs.magicmobjspawn.selectednum
+
+            if gigs.weaponnext == 1 and currentmagicmobj < #gigs.magicmobjs then gigs.magicmobjspawn.selectednum = $+1
+            elseif gigs.weaponnext == 1 and currentmagicmobj > #gigs.magicmobjs then gigs.magicmobjspawn.selectednum = 0 end
+
+            if gigs.weaponprev == 1 and currentmagicmobj > 0 then gigs.magicmobjspawn.selectednum = $-1
+            elseif gigs.weaponprev == 1 and currentmagicmobj < 0 then gigs.magicmobjspawn.selectednum = #gigs.magicmobjs end
+
             if gigs.firenormal == 1 then P_SpawnMobjFromMobj(g, g.x+10, 0, 0, MT_HEARTRING) end
 
             if gigs.firenormal >= 5 or gigs.fire >= 5 then
@@ -137,6 +149,10 @@ addHook("ThinkFrame", do
             gigs.justjumped = true
 
             if g.state ~= S_PLAY_PAIN then g.state = S_PLAY_FALL end
+        end
+
+        if g.state == S_GIGGLES_DOUBLEJUMP and not gigs.jump and g.momz > 0 then
+            g.momz = $/2
         end
     end
 end)

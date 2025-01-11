@@ -59,7 +59,7 @@ states[S_GIGGLES_DASH] = { SPR_PLAY, SPR2_DASH, -1, nil, nil, nil, S_PLAY_FALL }
 states[S_PLAY_STND].action = A_DoNotWait
 
 -- MOBJS --------------------------------------
-freeslot("MT_HEARTRING", "MT_SCRAPPERMAGIC")
+freeslot("MT_HEARTRING", "MT_PUREMAGIC", "MT_SCRAPPERMAGIC")
 freeslot("S_HEARTRING")
 freeslot("SPR_HRNG")
 
