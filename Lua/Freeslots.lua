@@ -2,6 +2,7 @@
 freeslot("sfx_emjmp", "sfx_emjmp2", "sfx_ptrans", "sfx_ntrans", "sfx_strans", "sfx_honk1", "sfx_silenc", "sfx_emdsh")
 freeslot("sfx_land1", "sfx_land2", "sfx_land3")
 freeslot("sfx_emgp1", "sfx_emgp2", "sfx_emgp3")
+freeslot("sfx_mmswch")
 
 freeslot("sfx_hpup")
 sfxinfo[sfx_emjmp].caption = "Jump"
@@ -17,7 +18,7 @@ sfxinfo[sfx_emdsh].caption = "Whoosh"
 sfxinfo[sfx_emgp1].caption = "Splat!"
 sfxinfo[sfx_emgp2].caption = "Splat!"
 sfxinfo[sfx_emgp3].caption = "Splat!"
-
+sfxinfo[sfx_mmswch].caption = "Swap"
 
 -- VOX ---------------------------------------
 freeslot("sfx_givoc1", "sfx_givoc2", "sfx_givoc3", "sfx_givoc4") -- Jumps
@@ -27,6 +28,26 @@ freeslot("sfx_giatk1", "sfx_giatk2", "sfx_giatk3") -- Attacks
 
 freeslot("sfx_giqg1") -- Grunts or other noises
 freeslot("sfx_gipai1", "sfx_gipai2", "sfx_gipai3", "sfx_gipai4") -- Pain
+
+sfxinfo[sfx_givoc1].caption = "'Hup!'"
+sfxinfo[sfx_givoc2].caption = "'Hah!'"
+sfxinfo[sfx_givoc3].caption = "'Yah!'"
+sfxinfo[sfx_givoc4].caption = "'Hah'"
+sfxinfo[sfx_givoc5].caption = "'Yah!'"
+sfxinfo[sfx_givoc6].caption = "'Aah!'"
+sfxinfo[sfx_givoc7].caption = "'Yah!'"
+sfxinfo[sfx_givoc8].caption = "'Hoo!'"
+
+sfxinfo[sfx_giatk1].caption = "'Haaa!'"
+sfxinfo[sfx_giatk2].caption = "'Huaaa!'"
+sfxinfo[sfx_giatk3].caption = "'Yoohh!'"
+
+sfxinfo[sfx_giqg1].caption = "'Hee!'"
+
+sfxinfo[sfx_gipai1].caption = "'Nngh!'"
+sfxinfo[sfx_gipai2].caption = "'Nuh!'"
+sfxinfo[sfx_gipai3].caption = "'Aagh!'"
+sfxinfo[sfx_gipai4].caption = "'Ow!'"
 
 -- STINGERS -------------------------------------
 freeslot("sfx_stdark", "sfx_stliht")

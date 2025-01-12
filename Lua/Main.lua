@@ -247,7 +247,7 @@ addHook("PlayerThink", function(p)
     if not (p.giggletable) then Giggles.Setup(p) return end -- No table? We'll fix that.
     if not (p.mo and p.mo.valid) then return end
     local g = p.mo
-    local gigs = p.giggletable local laughs = gigs
+    local gigs = p.giggletable
 
     if not (IsGiggles(g, p)) then
         
@@ -262,7 +262,7 @@ addHook("PlayerThink", function(p)
     if g.state == S_PLAY_WAIT and p.camerascale >= FU then
         p.camerascale = ease.linear(FU*1/10, $, FU)
     else
-        p.camerascale = gigs.camerascale
+        p.camerascale = skins[g.skin].camerascale
     end
 
     -- We were good, now we're bad. Or are we good?
@@ -306,6 +306,8 @@ addHook("PlayerThink", function(p)
 end)
 
 addHook("MusicChange", function(oldmus, newmus) 
+    if not Giggles_NET.musiclayers.layers then return end
+    
     for i in #Giggles_NET.musiclayers.layers do
         if newmus == i then Giggles_NET.musiclayers.canplay = true
         else Giggles_NET.musiclayers.canplay = false end

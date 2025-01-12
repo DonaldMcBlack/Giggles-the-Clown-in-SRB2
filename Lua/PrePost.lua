@@ -39,7 +39,7 @@ addHook("PreThinkFrame", do
                 P_SetObjectMomZ(g, abs(g.momz), true)
             end
 
-            -- Extend this so it doesn't exceed 0 or length
+            -- Magimajig swapping
             local currentmagicmobj = gigs.magicmobjspawn.selectednum
 
             if gigs.weaponnext == 1 and currentmagicmobj < #gigs.magicmobjs then gigs.magicmobjspawn.selectednum = $+1
@@ -48,6 +48,8 @@ addHook("PreThinkFrame", do
             if gigs.weaponprev == 1 and currentmagicmobj > 0 then gigs.magicmobjspawn.selectednum = $-1
             elseif gigs.weaponprev == 1 and currentmagicmobj == 0 then gigs.magicmobjspawn.selectednum = #gigs.magicmobjs end
 
+            if gigs.weaponprev == 1 or gigs.weaponnext == 1 then S_StartSound(nil, sfx_mmswch, consoleplayer) end
+            --
             if gigs.firenormal == 1 then P_SpawnMobjFromMobj(g, g.x+10, 0, 0, MT_HEARTRING) end
 
             if gigs.firenormal >= 5 or gigs.fire >= 5 then

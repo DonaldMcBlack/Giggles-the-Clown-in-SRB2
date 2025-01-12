@@ -70,10 +70,10 @@ COM_AddCommand("giggles_voice", function(p, toggle)
     local gigs = p.giggletable
 
     if toggle == "true" then 
-        gigs.voice = true
+        Giggles_NET.voice = true
         CONS_Printf(p, "Giggles can now speak!")
     elseif toggle == "false" then 
-        gigs.voice = false
+        Giggles_NET.voice = false
         CONS_Printf(p, "Giggles is now mute!")
     end
 end)

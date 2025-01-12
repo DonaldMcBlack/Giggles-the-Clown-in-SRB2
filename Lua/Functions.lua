@@ -120,15 +120,11 @@ local function LoadMusicLayers(map)
     end
 end
 
-local OldLayer
 Giggles.MusicLayerChange = function(p, gigs)
     if not Giggles_NET.musiclayers.enabled or not Giggles_NET.musiclayers.canplay then return end -- You shouldn't be playing
     if p.powers[pw_invulnerability] or p.powers[pw_sneakers] or p.powers[pw_extralife] then return end -- We want to hear the jingles!
 
     local CurrentLayer = Giggles_NET.musiclayers.layers[gigs.alignment.phase]
-
-    if CurrentLayer ~= OldLayer then OldLayer = CurrentLayer
-    else return end
 
     -- CONS_Printf(p, CurrentLayer)
 
