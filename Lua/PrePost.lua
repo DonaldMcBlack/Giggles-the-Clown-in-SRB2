@@ -43,10 +43,10 @@ addHook("PreThinkFrame", do
             local currentmagicmobj = gigs.magicmobjspawn.selectednum
 
             if gigs.weaponnext == 1 and currentmagicmobj < #gigs.magicmobjs then gigs.magicmobjspawn.selectednum = $+1
-            elseif gigs.weaponnext == 1 and currentmagicmobj > #gigs.magicmobjs then gigs.magicmobjspawn.selectednum = 0 end
+            elseif gigs.weaponnext == 1 and currentmagicmobj == #gigs.magicmobjs then gigs.magicmobjspawn.selectednum = 0 end
 
             if gigs.weaponprev == 1 and currentmagicmobj > 0 then gigs.magicmobjspawn.selectednum = $-1
-            elseif gigs.weaponprev == 1 and currentmagicmobj < 0 then gigs.magicmobjspawn.selectednum = #gigs.magicmobjs end
+            elseif gigs.weaponprev == 1 and currentmagicmobj == 0 then gigs.magicmobjspawn.selectednum = #gigs.magicmobjs end
 
             if gigs.firenormal == 1 then P_SpawnMobjFromMobj(g, g.x+10, 0, 0, MT_HEARTRING) end
 
@@ -162,7 +162,7 @@ addHook("PostThinkFrame", do
     for p in players.iterate() do
         if not IsGiggles(p.mo, p) then return end
 
-        local gigs = p.giggletable local laughs = gigs
+        local gigs = p.giggletable
 
         if not gigs then continue end
         local g = p.mo

@@ -75,19 +75,63 @@ Giggles.AlignmentCheck = function(p, gigs)
     end
 end
 
-Giggles.MusicLayerChange = function(p, gigs)
-    if not gigs.musiclayers.enabled or not gigs.musiclayers.canplay then return end -- You shouldn't be playing
+local function LoadMusicLayers(map)
+    -- Music layer stuff, it's optional and not necessary.
+    if mapheaderinfo[map].layered_music ~= nil and mapheaderinfo[map].layered_music == "true" then
+        local mapmus = mapheaderinfo[map].musname
+            
+        -- Do this first to help with not requiring manual SOC inclusion.
+        if string.sub(mapmus, 1, 1) == "N" then
 
-    if p.powers[pw_invulnerability] or p.powers[pw_sneakers] or p.powers[pw_extralife] then return end -- We want to hear the jingles!
+            local normalmus = string.sub(mapmus, 2, string.len(mapmus))
 
-    local CurrentLayer = gigs.musiclayers.layers[gigs.alignment.phase]
-    S_ChangeMusic(CurrentLayer, true, p, nil, S_GetMusicPosition())
+            Giggles_NET.musiclayers.layers[1] = "L" + normalmus
+            Giggles_NET.musiclayers.layers[2] = mapmus
+            Giggles_NET.musiclayers.layers[3] = "D" + normalmus
+
+            if S_MusicExists(Giggles_NET.musiclayers.layers[1]) and S_MusicExists(Giggles_NET.musiclayers.layers[3]) then
+                Giggles_NET.musiclayers.canplay = true
+            elseif mapheaderinfo[map].lightmusname ~= nil or mapheaderinfo[map].darkmusname ~= nil then -- Fall back on SOC if previous method didn't work
+                Giggles_NET.musiclayers.canplay = true
+                Giggles_NET.musiclayers.layers[1] = mapheaderinfo[map].lightmusname
+                Giggles_NET.musiclayers.layers[2] = mapheaderinfo[map].musname
+                Giggles_NET.musiclayers.layers[3] = mapheaderinfo[map].darkmusname
+                
+            else -- If there is no music found
+                Giggles_NET.musiclayers.canplay = false
+
+                Giggles_NET.musiclayers.layers[1] = nil
+                Giggles_NET.musiclayers.layers[2] = nil
+                Giggles_NET.musiclayers.layers[3] = nil
+            end
+        else
+            Giggles_NET.musiclayers.canplay = false
+            Giggles_NET.musiclayers.layers[1] = nil
+            Giggles_NET.musiclayers.layers[2] = nil
+            Giggles_NET.musiclayers.layers[3] = nil
+        end
+
+    else
+        Giggles_NET.musiclayers.canplay = false
+
+        Giggles_NET.musiclayers.layers[1] = nil
+        Giggles_NET.musiclayers.layers[2] = nil
+        Giggles_NET.musiclayers.layers[3] = nil
+    end
 end
 
-// Taken from Cash Banooca
-Giggles.JumpManager = function(g, z, relative)
-    // Nerf any additional jumps made in water
-    if g.eflags & MFE_UNDERWATER or g.eflags & MFE_GOOWATER then z = $ - ($/3) end
+local OldLayer
+Giggles.MusicLayerChange = function(p, gigs)
+    if not Giggles_NET.musiclayers.enabled or not Giggles_NET.musiclayers.canplay then return end -- You shouldn't be playing
+    if p.powers[pw_invulnerability] or p.powers[pw_sneakers] or p.powers[pw_extralife] then return end -- We want to hear the jingles!
 
-    P_SetObjectMomZ(g, z, relative)
+    local CurrentLayer = Giggles_NET.musiclayers.layers[gigs.alignment.phase]
+
+    if CurrentLayer ~= OldLayer then OldLayer = CurrentLayer
+    else return end
+
+    -- CONS_Printf(p, CurrentLayer)
+
+    if S_MusicExists(CurrentLayer) then S_ChangeMusic(CurrentLayer, true, p, nil, S_GetMusicPosition())
+    else LoadMusicLayers(Giggles_NET.currentmap) end
 end

@@ -1,13 +1,21 @@
 rawset(_G, "Giggles", {}) -- Global table for holding functions.
 
 rawset(_G, "Giggles_NET", {
+    -- Gameplay Stuff
     inbossmap = false,
-    playedbossintro = false
+    playedbossintro = false,
+    currentmap = nil,
+    musiclayers = { enabled = true, canplay = true, layers = {[1] = "L", [2] = "N", [3] = "D"}},
+    magicmobjlimit = 5,
+
+    -- Options
+    voice = true,
+    hudtoggle = true
 })
 
 -- g for the mo, p for the player if mo is empty, insert a string for the clip and chance is for how common.
 rawset(_G, "Giggles_PlayVoice", function(g, p, clip, chance)
-    if not p.giggletable.voice then return end -- Can't say anything if you're muted dummy
+    if not Giggles_NET.voice then return end -- Can't say anything if you're muted dummy
     if p.spectator then return end --         Or if you're dead
 
     if not g then g = p.mo end
@@ -27,18 +35,22 @@ Giggles.Setup = function(p)
             -- Alignment
             alignment = { points = 0, phase = 2, lastphase = 2 },
 
-            hudtoggle = true,
-
             -- Logic
             grounded = true,
 			sprinting = false,
             justjumped = false,
 
+            -- Abilities
             dash = { enabled = false, timer = 10, timerref = 10, angle = 0, aerial = false },
-
             groundpound = { enabled = false, canperform = false, stuntime = 5, stuntimeref = 5 },
 
-            knockedback = false,
+            abilitystates = {
+                -- Pure only -------------------
+                handstand = { enabled = false },
+                --------------------------------
+                summoning = { enabled = false }
+            },
+
             fallmomz = 0,
 
             -- Buttons
@@ -93,15 +105,7 @@ Giggles.Setup = function(p)
                     amount = 5,
                     duration = -1
                 }
-            },
-
-            -- Options
-            voice = true,
-            magicmobjlimit = 5,
-
-            -- Misc
-            camerascale = FU*6/5,
-            musiclayers = { enabled = true, canplay = true, layers = {[1] = "L", [2] = "N", [3] = "D"}}
+            }
         }
     end
     return true

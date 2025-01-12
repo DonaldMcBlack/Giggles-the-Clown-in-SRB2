@@ -27,8 +27,7 @@ gp_sounds[3] = sfx_emgp3
 Giggles.Knockback = function(p)
     if p.mo
     and p.mo.valid
-    and IsGiggles(p.mo)
-    and p.giggletable.knockedback then
+    and IsGiggles(p.mo) then
 
         local g = p.mo
         local gigs = p.giggletable
@@ -44,7 +43,6 @@ Giggles.Knockback = function(p)
         g.momy = FixedMul(multiplier, $)
 
         -- CONS_Printf(p, "Knockback")
-        gigs.knockedback = false
     end
 end
 
@@ -261,8 +259,6 @@ addHook("PlayerThink", function(p)
         gigs.healthpips = 0
     return end
 
-    Giggles.Knockback(p)
-
     if g.state == S_PLAY_WAIT and p.camerascale >= FU then
         p.camerascale = ease.linear(FU*1/10, $, FU)
     else
@@ -309,75 +305,19 @@ addHook("PlayerThink", function(p)
     end
 end)
 
-local function LoadMusicLayers(map)
-    -- Music layer stuff, it's optional and not necessary.
-    if mapheaderinfo[map].layered_music ~= nil and mapheaderinfo[map].layered_music == "true" then
-
-        -- Do this for every player...
-        for p in players.iterate do
-            local gigs = p.giggletable
-
-            local mapmus = mapheaderinfo[map].musname
-            
-            -- Do this first to help with not requiring manual SOC inclusion.
-            if string.sub(mapmus, 1, 1) == "N" then
-
-                local normalmus = string.sub(mapmus, 2, string.len(mapmus))
-
-                gigs.musiclayers.layers[1] = "L" + normalmus
-                gigs.musiclayers.layers[2] = mapmus
-                gigs.musiclayers.layers[3] = "D" + normalmus
-
-                if S_MusicExists(gigs.musiclayers.layers[1]) and S_MusicExists(gigs.musiclayers.layers[3]) then
-                    gigs.musiclayers.canplay = true
-                    Giggles.MusicLayerChange(p, gigs)
-                    continue
-                elseif mapheaderinfo[map].lightmusname ~= nil or mapheaderinfo[map].darkmusname ~= nil then -- Fall back on SOC if previous method didn't work
-                    gigs.musiclayers.canplay = true
-                    gigs.musiclayers.layers[1] = mapheaderinfo[map].giggles_light
-                    gigs.musiclayers.layers[2] = mapheaderinfo[map].musname
-                    gigs.musiclayers.layers[3] = mapheaderinfo[map].giggles_dark
-
-                    Giggles.MusicLayerChange(p, gigs)
-                    continue
-                    
-                else -- If there is no music found
-                    gigs.musiclayers.canplay = false
-
-                    gigs.musiclayers.layers[1] = nil
-                    gigs.musiclayers.layers[2] = nil
-                    gigs.musiclayers.layers[3] = nil
-
-                    continue
-                end
-            else
-                gigs.musiclayers.canplay = false
-                gigs.musiclayers.layers[1] = nil
-                gigs.musiclayers.layers[2] = nil
-                gigs.musiclayers.layers[3] = nil
-
-                continue
-            end
-        end
-
-    else
-        -- Do something about this if music is reworked.
-        for p in players.iterate do
-            local gigs = p.giggletable
-
-            gigs.musiclayers.canplay = false
-
-            gigs.musiclayers.layers[1] = nil
-            gigs.musiclayers.layers[2] = nil
-            gigs.musiclayers.layers[3] = nil
-        end
+addHook("MusicChange", function(oldmus, newmus) 
+    for i in #Giggles_NET.musiclayers.layers do
+        if newmus == i then Giggles_NET.musiclayers.canplay = true
+        else Giggles_NET.musiclayers.canplay = false end
     end
-end
+end)
 
 addHook("MapChange", function(map)
     if mapheaderinfo[map].bonustype == 1 then
         Giggles_NET.inbossmap = true
     else Giggles_NET.inbossmap = false end
+
+    Giggles_NET.currentmap = map
 end)
 
 addHook("MapLoad", function(map)
@@ -386,7 +326,7 @@ addHook("MapLoad", function(map)
         S_StartSound(nil, sfx_stboss, consoleplayer) 
     end
 
-    LoadMusicLayers(map)
+    if not Giggles_NET.currentmap then Giggles_NET.currentmap = map end
 end)
 
 addHook("PlayerSpawn", function(p)
@@ -436,7 +376,7 @@ addHook("MobjDamage", function(g, inf, src, dmg, dmgtype)
                 p.powers[pw_shield] = SH_PITY
             end
 
-            gigs.knockedback = true
+            Giggles.Knockback(p)
             
             Giggles.ManageHealth(gigs, "-", 1)
             Giggles_PlayVoice(g, p, P_RandomRange(sfx_gipai1, sfx_gipai4), 75)
