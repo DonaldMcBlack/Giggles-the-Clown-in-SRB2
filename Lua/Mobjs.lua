@@ -26,6 +26,17 @@ end
 
 addHook("MobjDeath", GiveRandomItemFromMobj)
 
+addHook("MobjThinker", function(mo)
+    if mo.target.player and mo.target.valid then
+        local p = mo.target.player
+        local gigs = p.giggletable
+
+        if gigs.majigpointer.forwardmove ~= 0 or gigs.majigpointer.sidemove ~= 0 then
+            P_InstaThrust(mo, p.cmd.angleturn<<16 + R_PointToAngle2(0, 0, gigs.majigpointer.forwardmove*FU, -gigs.majigpointer.sidemove*FU), FU*(abs(gigs.majigpointer.forwardmove) + abs(gigs.majigpointer.sidemove)))
+        end
+    end
+end, MT_MAJIGARROW)
+
 addHook("MobjSpawn", function(ring)
     ring.shadowscale = FU
 end, MT_HEARTRING)

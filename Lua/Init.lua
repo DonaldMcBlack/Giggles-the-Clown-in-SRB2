@@ -40,15 +40,20 @@ Giggles.Setup = function(p)
 			sprinting = false,
             justjumped = false,
 
+            majigpointer = {
+                forwardmove = 0,
+                sidemove = 0,
+            },
+
             -- Abilities
             dash = { enabled = false, timer = 10, timerref = 10, angle = 0, aerial = false },
             groundpound = { enabled = false, canperform = false, stuntime = 5, stuntimeref = 5 },
 
             abilitystates = {
                 -- Pure only -------------------
-                handstand = { enabled = false },
+                handstand = false,
                 --------------------------------
-                summoning = { enabled = false }
+                summoning = false
             },
 
             fallmomz = 0,
@@ -67,41 +72,42 @@ Giggles.Setup = function(p)
             fire = (p.cmd.buttons & BT_ATTACK) and 1 or 0,
 			
 			tossflag = (p.cmd.buttons & BT_TOSSFLAG) and 1 or 0,
+            --
 
             -- Magicmobjs
             magicmobjspawn = { enabled = false, canperform = true, selectednum = 0 },
             magicmobjs = {
                 [0] = {
                     name = "TV",
-                    -- type = MT_TV,
+                    thingtype = MT_YELLOWSPRING,
                     amount = 5,
                     duration = 15
                 },
 
                 [1] = {
                     name = "Watch",
-                    -- type = MT_WATCH,
+                    thingtype = MT_BUMPER,
                     amount = 5,
                     duration = 15
                 },
                 
                 [2] = {
                     name = "Anvil",
-                    -- type = MT_ANVIL,
+                    thingtype = MT_ROLLOUTROCK,
                     amount = 5,
                     duration = 10
                 },
 
                 [3] = {
                     name = "Balloon",
-                    -- type = MT_CLOWN_BALLOON,
+                    type = MT_BALLOON,
                     amount = 5,
                     duration = -1
                 },
 
                 [4] = {
                     name = "Fireworks",
-                    -- type = MT_FIREWORKS,
+                    thingtype = MT_EXPLODE,
                     amount = 5,
                     duration = -1
                 }

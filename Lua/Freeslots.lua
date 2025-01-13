@@ -3,6 +3,7 @@ freeslot("sfx_emjmp", "sfx_emjmp2", "sfx_ptrans", "sfx_ntrans", "sfx_strans", "s
 freeslot("sfx_land1", "sfx_land2", "sfx_land3")
 freeslot("sfx_emgp1", "sfx_emgp2", "sfx_emgp3")
 freeslot("sfx_mmswch")
+freeslot("sfx_mjgeq", "sfx_mjguq")
 
 freeslot("sfx_hpup")
 sfxinfo[sfx_emjmp].caption = "Jump"
@@ -19,6 +20,8 @@ sfxinfo[sfx_emgp1].caption = "Splat!"
 sfxinfo[sfx_emgp2].caption = "Splat!"
 sfxinfo[sfx_emgp3].caption = "Splat!"
 sfxinfo[sfx_mmswch].caption = "Swap"
+sfxinfo[sfx_mjgeq].caption = "Magicmajig Equipped"
+sfxinfo[sfx_mjguq].caption = "Magicmajig Unequipped"
 
 -- VOX ---------------------------------------
 freeslot("sfx_givoc1", "sfx_givoc2", "sfx_givoc3", "sfx_givoc4") -- Jumps
@@ -72,7 +75,8 @@ states[S_GIGGLES_DOUBLEJUMP] = {
     action = none, 
     var1 = 6, 
     var2 = 1,
-    nextstate = S_PLAY_FALL}
+    nextstate = S_PLAY_FALL
+}
 
 freeslot("S_GIGGLES_DASH")
 states[S_GIGGLES_DASH] = { SPR_PLAY, SPR2_DASH, -1, nil, nil, nil, S_PLAY_FALL }
@@ -83,6 +87,7 @@ states[S_PLAY_STND].action = A_DoNotWait
 freeslot("MT_HEARTRING", "MT_PUREMAGIC", "MT_SCRAPPERMAGIC")
 freeslot("S_HEARTRING")
 freeslot("SPR_HRNG")
+freeslot("MT_MAJIGARROW", "S_MAJIGPNT1", "SPR_MJIG")
 
 states[S_HEARTRING] = {
     sprite = SPR_HRNG,
@@ -106,6 +111,30 @@ mobjinfo[MT_HEARTRING] = {
     height = 24*FU,
     mass = 100,
     flags = MF_SLIDEME|MF_NOGRAVITY|MF_SPECIAL|MF_NOCLIPHEIGHT
+}
+
+mobjinfo[MT_MAJIGARROW] = {
+    doomednum = -1,
+    spawnstate = S_MAJIGPNT1,
+    spawnhealth = 1000,
+    seestate = S_NULL,
+    reactiontime = 8,
+    attacksound = 0,
+    painstate = 0,
+    painsound = 0,
+    deathstate = S_NULL,
+    speed = FU*10,
+    radius = FU*5,
+    height = FU*64,
+    flags = MF_NOCLIP|MF_NOBLOCKMAP
+}
+
+states[S_MAJIGPNT1] = {
+    sprite = SPR_MJIG,
+    frame = A|FF_FULLBRIGHT,
+    tics = -1,
+    action = nil,
+    nextstate = S_MAJIGPNT1
 }
 
 sfxinfo[sfx_hpup] = {

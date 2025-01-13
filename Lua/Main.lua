@@ -295,6 +295,9 @@ addHook("PlayerThink", function(p)
         p.normalspeed = skins[g.skin].normalspeed/2
     end
 
+    if gigs.abilitystates.summoning then p.pflags = $|PF_FULLSTASIS
+    else p.pflags = $ & ~PF_FULLSTASIS end
+
     if gigs.groundpound.enabled then
         Giggles.GroundPound(p, g, gigs)
         g.momz = $ + FixedMul(P_GetMobjGravity(g), FU*5)
@@ -307,9 +310,9 @@ end)
 
 addHook("MusicChange", function(oldmus, newmus) 
     if not Giggles_NET.musiclayers.layers then return end
-    
-    for i in #Giggles_NET.musiclayers.layers do
-        if newmus == i then Giggles_NET.musiclayers.canplay = true
+
+    for i = 0, #Giggles_NET.musiclayers.layers do
+        if newmus == Giggles_NET.musiclayers.layers[i] then Giggles_NET.musiclayers.canplay = true
         else Giggles_NET.musiclayers.canplay = false end
     end
 end)

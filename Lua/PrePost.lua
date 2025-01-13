@@ -1,6 +1,8 @@
 local Giggles = Giggles
 local strong_flags = STR_FLOOR|STR_SPRING|STR_GUARD|STR_HEAVY
 
+local MagicmajigSpawner
+
 addHook("PreThinkFrame", do
 
     for p in players.iterate do
@@ -26,6 +28,9 @@ addHook("PreThinkFrame", do
 
             gigs.firenormal = (p.cmd.buttons & BT_FIRENORMAL) and $+1 or 0
             gigs.fire = (p.cmd.buttons & BT_ATTACK) and $+1 or 0
+
+            gigs.majigpointer.forwardmove = p.cmd.forwardmove
+            gigs.majigpointer.sidemove = p.cmd.sidemove
         end
 
         if g then
@@ -40,6 +45,7 @@ addHook("PreThinkFrame", do
             end
 
             -- Magimajig swapping
+            
             local currentmagicmobj = gigs.magicmobjspawn.selectednum
 
             if gigs.weaponnext == 1 and currentmagicmobj < #gigs.magicmobjs then gigs.magicmobjspawn.selectednum = $+1
@@ -50,7 +56,6 @@ addHook("PreThinkFrame", do
 
             if gigs.weaponprev == 1 or gigs.weaponnext == 1 then S_StartSound(nil, sfx_mmswch, consoleplayer) end
             --
-            if gigs.firenormal == 1 then P_SpawnMobjFromMobj(g, g.x+10, 0, 0, MT_HEARTRING) end
 
             if gigs.firenormal >= 5 or gigs.fire >= 5 then
                 p.drawangle = R_PointToAngle(g.x+FixedMul(cos(g.angle), 64<<FRACBITS), g.y+FixedMul(sin(g.angle), 64<<FRACBITS))
@@ -69,8 +74,10 @@ addHook("PreThinkFrame", do
             -- For ground only actions
             if P_IsObjectOnGround(g) then
                 -- Dash
-                if gigs.spin == 1 
-                and not gigs.dash.enabled then
+                if gigs.spin == 1
+                and gigs.c3 == 0 
+                and not gigs.dash.enabled
+                and not gigs.abilitystates.summoning then
                     p.powers[pw_nocontrol] = 1
                     S_StartSound(g, sfx_emdsh)
                     Giggles_PlayVoice(g, p, sfx_giqg1, 50)
@@ -78,6 +85,25 @@ addHook("PreThinkFrame", do
                     gigs.dash.angle = g.angle
                     gigs.dash.aerial = false
                     Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, true, 16, FU*4, p.drawangle)
+                end
+
+                -- Summoning state
+                if gigs.c3 == 1 and not gigs.abilitystates.summoning then
+                    gigs.abilitystates.summoning = true
+                    if not (MagicmajigSpawner and MagicmajigSpawner.valid) then 
+                        MagicmajigSpawner = P_SpawnMobjFromMobj(g, 0, 0, 0, MT_MAJIGARROW)
+                        MagicmajigSpawner.target = g 
+                        S_StartSound(g, sfx_mjgeq)
+                    end
+                elseif gigs.c3 < 1 and gigs.abilitystates.summoning then
+                    P_SpawnMobjFromMobj(MagicmajigSpawner, 0, 0, MagicmajigSpawner.height, gigs.magicmobjs[gigs.magicmobjspawn.selectednum].thingtype)
+                    gigs.abilitystates.summoning = false
+                    S_StartSound(g, sfx_mjguq)
+                    P_KillMobj(MagicmajigSpawner)
+                elseif gigs.c3 > 1 and gigs.spin == 1 and gigs.abilitystates.summoning then
+                    gigs.abilitystates.summoning = false
+                    S_StartSound(g, sfx_mjguq)
+                    P_KillMobj(MagicmajigSpawner)
                 end
             end
 
@@ -168,5 +194,9 @@ addHook("PostThinkFrame", do
 
         if not gigs then continue end
         local g = p.mo
+
+        if gigs.abilitystates.summoning and MagicmajigSpawner.valid then
+            p.drawangle = R_PointToAngle2(g.x, g.y, MagicmajigSpawner.x, MagicmajigSpawner.y)
+        end
     end
 end)
