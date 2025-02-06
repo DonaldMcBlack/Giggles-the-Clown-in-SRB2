@@ -10,7 +10,9 @@ rawset(_G, "Giggles_NET", {
 
     -- Options
     voice = true,
-    hudtoggle = true
+    hudtoggle = true,
+
+    debugmode = true
 })
 
 -- g for the mo, p for the player if mo is empty, insert a string for the clip and chance is for how common.
@@ -43,6 +45,14 @@ Giggles.Setup = function(p)
             majigpointer = {
                 forwardmove = 0,
                 sidemove = 0,
+            },
+
+            hud = {
+                rings = {
+                    fixedscale = 2*FU/3,
+                    scale = 2*FU/3,
+                    count = 0
+                }
             },
 
             -- Abilities

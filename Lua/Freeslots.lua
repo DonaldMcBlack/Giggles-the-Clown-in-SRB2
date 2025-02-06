@@ -125,7 +125,7 @@ mobjinfo[MT_MAJIGARROW] = {
     deathstate = S_NULL,
     speed = FU*10,
     radius = FU*5,
-    height = FU*64,
+    height = FU*156,
     flags = MF_NOCLIP|MF_NOBLOCKMAP
 }
 

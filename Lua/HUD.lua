@@ -76,7 +76,7 @@ local function DrawHealth(v, p, g, gigs, color)
 
         local incre = (FixedMul(FixedDiv(maxspace, gigs.maxhealthpips*FU)*j, FU*4/5))
 
-        v.drawScaled(maxspace-(incre)+xoff, 35*FU+add, FU/4, patch, healthflags|frontflag)
+        v.drawScaled(maxspace-(incre)+xoff, 40*FU+add, FU/4, patch, healthflags|frontflag)
     end
 
     v.drawString(55, 55, ("x ") + p.lives, V_SNAPTOLEFT|V_SNAPTOTOP|V_HUDTRANS|V_PERPLAYER)
@@ -90,14 +90,16 @@ local function DrawRings(v, p)
         return
     end
 
-    local patch = v.cachePatch("RINGA0")
+    p.giggletable.hud.rings.scale = ease.outcubic(FU/4, p.giggletable.hud.rings.scale, p.giggletable.hud.rings.fixedscale)
+    local scale = p.giggletable.hud.rings.scale
+
+    local patch = v.cachePatch("G_RING")
     local eflag
 
     if p.spectator then eflag = V_HUDTRANSHALF
     else eflag = V_HUDTRANS end
 
-
-    v.drawScaled(260*FU, 45*FU, FU*4/5, patch, V_SNAPTORIGHT|V_SNAPTOTOP|eflag|V_PERPLAYER)
+    v.drawScaled(260*FU, 35*FU, scale, patch, V_SNAPTORIGHT|V_SNAPTOTOP|eflag|V_PERPLAYER)
 
     local rings = tostring(p.rings)
 
@@ -112,7 +114,22 @@ local function DrawMagicMobjs(v, p)
 
     local objectname = gigs.magicmobjs[gigs.magicmobjspawn.selectednum].name
 
-    v.drawString(50, 150, objectname, V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|V_PERPLAYER, "center")
+    v.drawString(50, 150, objectname, V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|V_PERPLAYER, "left")
+end
+
+local function DrawDebugInfo(v, p)
+    if not Giggles_NET.debugmode then return end
+
+    local gigs = p.giggletable
+    local debugflags = V_SNAPTOLEFT|V_SNAPTOBOTTOM
+
+    local phasename
+    if gigs.alignment.phase == 1 then phasename = "Pure"
+    elseif gigs.alignment.phase == 2 then phasename = "Neutral"
+    elseif gigs.alignment.phase == 3 then phasename = "Scrapper"
+    else phasename = "NULL" end
+
+    v.drawString(50, 140, "Alignment: " + gigs.alignment.points + " (" + phasename + ")", debugflags, "center")
 end
 
 -- hud.add(function(v, p)
@@ -169,6 +186,12 @@ addHook("HUD", function(v, p, cam)
                 DrawHealth(v, p, g, gigs, color)
                 DrawRings(v, p)
                 DrawMagicMobjs(v, p)
+                DrawDebugInfo(v, p)
+            end
+
+            if gigs.hud.rings.count ~= p.rings then
+                gigs.hud.rings.scale = 2*FU/2
+                gigs.hud.rings.count = p.rings
             end
         else -- Not Giggles
             customhud.SetupItem("rings", unmodname)

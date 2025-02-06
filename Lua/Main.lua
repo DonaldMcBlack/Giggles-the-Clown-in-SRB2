@@ -96,8 +96,11 @@ Giggles.Dash = function(g, p, gigs)
 
             gigs.dash.enabled = false
             gigs.dash.timer = gigs.dash.timerref
-            g.momx = 0
-            g.momy = 0
+
+            if p.cmd.forwardmove == 0 and p.cmd.sidemove == 0 then
+                g.momx = 0
+                g.momy = 0
+            end
 
             -- Remove Scrapper's strong flags
             if g.skin == "gigglesscrapper" then p.powers[pw_strong] = $ & ~dshstrong_flags end
@@ -274,6 +277,7 @@ addHook("PlayerThink", function(p)
     if not P_IsObjectOnGround(g) and g.momz < 0 then
         gigs.fallmomz = g.momz
 		-- CONS_Printf(p, tostring(g.momz))
+    elseif not P_IsObjectOnGround(g) and g.momz > 0 then camera.momz = 0
     elseif abs(gigs.fallmomz) >= p.height/4 and (g.eflags & MFE_JUSTHITFLOOR) and not gigs.groundpound.enabled then
         S_StartSound(g, P_RandomRange(sfx_land1, sfx_land3))
         Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, false, 8, FU*4, 0)
@@ -311,9 +315,11 @@ end)
 addHook("MusicChange", function(oldmus, newmus) 
     if not Giggles_NET.musiclayers.layers then return end
 
-    for i = 0, #Giggles_NET.musiclayers.layers do
+    for i in #Giggles_NET.musiclayers.layers do
         if newmus == Giggles_NET.musiclayers.layers[i] then Giggles_NET.musiclayers.canplay = true
         else Giggles_NET.musiclayers.canplay = false end
+
+        CONS_Printf(consoleplayer, newmus)
     end
 end)
 

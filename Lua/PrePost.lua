@@ -92,11 +92,25 @@ addHook("PreThinkFrame", do
                     gigs.abilitystates.summoning = true
                     if not (MagicmajigSpawner and MagicmajigSpawner.valid) then 
                         MagicmajigSpawner = P_SpawnMobjFromMobj(g, 0, 0, 0, MT_MAJIGARROW)
-                        MagicmajigSpawner.target = g 
+                        MagicmajigSpawner.target = g
+                        MagicmajigSpawner.drawonlyforplayer = p
                         S_StartSound(g, sfx_mjgeq)
                     end
                 elseif gigs.c3 < 1 and gigs.abilitystates.summoning then
                     P_SpawnMobjFromMobj(MagicmajigSpawner, 0, 0, MagicmajigSpawner.height, gigs.magicmobjs[gigs.magicmobjspawn.selectednum].thingtype)
+                    P_SpawnMobjFromMobj(MagicmajigSpawner, 0, 0, MagicmajigSpawner.height, MT_MAJIGSPARK)
+                    
+                    local i = 0
+                    while i < 20 do
+                        local particle = P_SpawnMobjFromMobj(MagicmajigSpawner, 0, 0, MagicmajigSpawner.height, MT_IVSP)
+                        particle.momx = P_RandomRange(-10, 10)*FU
+                        particle.momy = P_RandomRange(-10, 10)*FU
+                        particle.momz = P_RandomRange(-10, 10)*FU
+                        particle.scalespeed = FU/TICRATE
+                        particle.destscale = 0
+                        i = $+1
+                    end
+
                     gigs.abilitystates.summoning = false
                     S_StartSound(g, sfx_mjguq)
                     P_KillMobj(MagicmajigSpawner)
