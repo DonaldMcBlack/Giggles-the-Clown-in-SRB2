@@ -53,7 +53,7 @@ local function DrawHealth(v, p, g, gigs, color)
 	-- Then face
 	patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "FACE" + tostring(GetFaceStatus(gigs))))
 	
-	v.drawScaled(-10*FU/5, -12*FU, 2*FU/4, patch, healthflags|frontflag, color)
+	v.drawScaled(35*FU, 40*FU, 2*FU/4, patch, healthflags|frontflag, color)
 	
     for i = 1, gigs.maxhealthpips do
 
@@ -114,7 +114,7 @@ local function DrawMagicMobjs(v, p)
 
     local objectname = gigs.magicmobjs[gigs.magicmobjspawn.selectednum].name
 
-    v.drawString(50, 150, objectname, V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|V_PERPLAYER, "left")
+    v.drawString(250, 30, objectname, V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|V_PERPLAYER, "left")
 end
 
 local function DrawDebugInfo(v, p)

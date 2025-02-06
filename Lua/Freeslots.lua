@@ -1,3 +1,6 @@
+-- SPRITES -------------------------------------
+freeslot("SPR_HRNG", "SPR_MJIG")
+
 -- SOUNDS --------------------------------------
 freeslot("sfx_emjmp", "sfx_emjmp2", "sfx_ptrans", "sfx_ntrans", "sfx_strans", "sfx_honk1", "sfx_silenc", "sfx_emdsh")
 freeslot("sfx_land1", "sfx_land2", "sfx_land3")
@@ -52,6 +55,12 @@ sfxinfo[sfx_gipai2].caption = "'Nuh!'"
 sfxinfo[sfx_gipai3].caption = "'Aagh!'"
 sfxinfo[sfx_gipai4].caption = "'Ow!'"
 
+sfxinfo[sfx_hpup] = {
+    flags = SF_NOMULTIPLESOUND|SF_X4AWAYSOUND,
+    singular = false,
+    caption = "Hearty Sparkle"
+}
+
 -- STINGERS -------------------------------------
 freeslot("sfx_stdark", "sfx_stliht")
 freeslot("sfx_stboss")
@@ -67,6 +76,8 @@ function A_DoNotWait(mo)
 end
 
 -- STATES ---------------------------------------
+states[S_PLAY_STND].action = A_DoNotWait
+
 freeslot("S_GIGGLES_DOUBLEJUMP")
 states[S_GIGGLES_DOUBLEJUMP] = { 
     sprite = SPR_PLAY, 
@@ -81,13 +92,8 @@ states[S_GIGGLES_DOUBLEJUMP] = {
 freeslot("S_GIGGLES_DASH")
 states[S_GIGGLES_DASH] = { SPR_PLAY, SPR2_DASH, -1, nil, nil, nil, S_PLAY_FALL }
 
-states[S_PLAY_STND].action = A_DoNotWait
-
--- MOBJS --------------------------------------
-freeslot("MT_HEARTRING", "MT_PUREMAGIC", "MT_SCRAPPERMAGIC")
-freeslot("S_HEARTRING")
-freeslot("SPR_HRNG")
-freeslot("MT_MAJIGARROW", "S_MAJIGPNT1", "SPR_MJIG")
+-- Magimajigs & Other Mobjs ---------
+freeslot("S_HEARTRING", "S_MAJIGPNT1")
 
 states[S_HEARTRING] = {
     sprite = SPR_HRNG,
@@ -98,6 +104,24 @@ states[S_HEARTRING] = {
     var2 = 1,
     nextstate = S_HEARTRING,
 }
+
+states[S_MAJIGPNT1] = {
+    sprite = SPR_MJIG,
+    frame = A|FF_FULLBRIGHT,
+    tics = -1,
+    action = nil,
+    nextstate = S_MAJIGPNT1
+}
+
+states[S_WATCH_SPAWN] = {
+
+}
+
+states[S_ANVIL_SPAWN] = {
+
+}
+-- MOBJS --------------------------------------
+freeslot("MT_HEARTRING", "MT_PUREMAGIC", "MT_SCRAPPERMAGIC", "MT_MAJIGARROW")
 
 mobjinfo[MT_HEARTRING] = {
     doomednum = -1,
@@ -129,20 +153,6 @@ mobjinfo[MT_MAJIGARROW] = {
     flags = MF_NOCLIP|MF_NOBLOCKMAP
 }
 
-states[S_MAJIGPNT1] = {
-    sprite = SPR_MJIG,
-    frame = A|FF_FULLBRIGHT,
-    tics = -1,
-    action = nil,
-    nextstate = S_MAJIGPNT1
-}
-
-sfxinfo[sfx_hpup] = {
-    flags = SF_NOMULTIPLESOUND|SF_X4AWAYSOUND,
-    singular = false,
-    caption = "Hearty Sparkle"
-}
-
 mobjinfo[MT_PUREMAGIC] = {
     doomednum = -1,
     spawnstate = S_SPRK1,
@@ -167,11 +177,57 @@ mobjinfo[MT_SCRAPPERMAGIC] = {
     flags = MF_NOBLOCKMAP|MF_MISSILE|MF_NOGRAVITY
 }
 
--- states[S_ANVIL_HANG] = {
+mobjinfo[MT_DOV] = {
+    doomednum = -1,
+    spawnstate = S_DOV_SPAWN,
+    spawnhealth = 1000,
+    speed = 20*FU,
+    radius = 18*FU,
+    height = 16*FU,
+    mass = 25,
+    damage = 0,
+    flags = MF_SOLID|MF_SLIDEME|MF_SPECIAL
+}
 
--- }
+mobjinfo[MT_WATCH] = {
+    doomednum = -1,
+    spawnstate = S_WATCH_SPAWN,
+    spawnhealth = 1000,
+    speed = 10*FU,
+    radius = 15*FU,
+    height = 15*FU,
+    mass = 20,
+    damage = 0,
+    flags = MF_NOBLOCKMAP|MF_NOGRAVITY
+}
 
--- mobjinfo[MT_ANVIL] = {
+mobjinfo[MT_ANVIL] = {
+    doomednum = -1,
+    spawnstate = S_ANVIL_SPAWN,
+    spawnhealth = 1000,
+    speed = 24*FU,
+    radius = 20*FU,
+    height = 15*FU,
+    mass = 50,
+    damage = 100,
+    flags = MF_SOLID|MF_SLIDEME
+}
+
+mobjinfo[MT_PACKLOON] = {
+    doomednum = -1,
+    spawnstate = S_PACKLOON_SPAWN,
+    spawnhealth = 1000,
+    speed = 0,
+    radius = 15*FU,
+    height = 20*FU,
+    mass = 30,
+    damage = 0,
+    flags = MF_NOGRAVITY
+}
+
+-- mobjinfo[MT_FIREWORKS] = {
 --     doomednum = -1,
---     spawnstate = S_ANVIL_HANG
+--     spawnstate = S_FIREWORKS_SPAWN,
+--     spawnhealth = 1000,
+--     speed = 0
 -- }

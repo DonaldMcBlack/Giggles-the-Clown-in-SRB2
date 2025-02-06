@@ -14,5 +14,5 @@ startcolor = 96
 prefcolor = bone
 jumpfactor = 1.4
 camerascale = 1.2
-flags = SF_NOJUMPSPIN|SF_MARIODAMAGE
+flags = SF_NOJUMPSPIN
 DSJUMP = DSSILENC
