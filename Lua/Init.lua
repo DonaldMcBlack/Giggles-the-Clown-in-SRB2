@@ -103,14 +103,14 @@ Giggles.Setup = function(p)
                 
                 [2] = {
                     name = "Anvil",
-                    thingtype = MT_ROLLOUTROCK,
+                    thingtype = MT_ANVIL,
                     amount = 5,
                     duration = 10
                 },
 
                 [3] = {
                     name = "Balloon",
-                    type = MT_BALLOON,
+                    thingtype = MT_BALLOON,
                     amount = 5,
                     duration = -1
                 },

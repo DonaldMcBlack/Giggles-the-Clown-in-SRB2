@@ -26,7 +26,7 @@ Giggles.ManageHealth = function(gigs, oper, num)
     end
 end
 
-Giggles.SpawnDustCircle = function(mo, dusttype, rot, vertical, amount, range, pitch)
+Giggles.SpawnDustCircle = function(mo, dusttype, rot, vertical, amount, scale, destscale, scalespd, pitch) -- mo is the mobj, dusttype is the particle you'll use, rot is the range, vertical is what is says on the tin, amount is how many mobjs will spawn, scale is what the particles start with, destscale is what they end with, scalespd is scale speed, pitch does nothing for the time being
     for i = 0, amount do
         local left = amount-(i-1)
         local another_angle = 360*(FU/amount)
@@ -36,6 +36,12 @@ Giggles.SpawnDustCircle = function(mo, dusttype, rot, vertical, amount, range, p
 
         local particle = P_SpawnMobjFromMobj(mo, 0, 0, z, dusttype)
         if particle and particle.valid then
+
+            particle.scale = scale
+
+            particle.destscale = destscale
+            particle.scalespeed = scalespd
+
             if vertical then
                 particle.momz = FixedMul(sin(angle), rot)
                 P_InstaThrust(particle, pitch+ANGLE_90,

@@ -1,12 +1,13 @@
 -- SPRITES -------------------------------------
-freeslot("SPR_HRNG", "SPR_MJIG")
+freeslot("SPR_HRNG", "SPR_MJIG", "SPR_AVIL")
 
 -- SOUNDS --------------------------------------
 freeslot("sfx_emjmp", "sfx_emjmp2", "sfx_ptrans", "sfx_ntrans", "sfx_strans", "sfx_honk1", "sfx_silenc", "sfx_emdsh")
-freeslot("sfx_land1", "sfx_land2", "sfx_land3")
-freeslot("sfx_emgp1", "sfx_emgp2", "sfx_emgp3")
+freeslot("sfx_land1", "sfx_land2", "sfx_land3") -- Giggles Landing
+freeslot("sfx_emgp1", "sfx_emgp2", "sfx_emgp3") -- Ground Pound impacts
 freeslot("sfx_mmswch")
-freeslot("sfx_mjgeq", "sfx_mjguq")
+freeslot("sfx_mjgeq", "sfx_mjguq") -- Magimajig Spawner
+freeslot("sfx_nvilh", "sfx_nvild", "sfx_nvilc", "sfx_nvils") -- Anvil
 
 freeslot("sfx_hpup")
 sfxinfo[sfx_emjmp].caption = "Jump"
@@ -25,6 +26,9 @@ sfxinfo[sfx_emgp3].caption = "Splat!"
 sfxinfo[sfx_mmswch].caption = "Swap"
 sfxinfo[sfx_mjgeq].caption = "Magicmajig Equipped"
 sfxinfo[sfx_mjguq].caption = "Magicmajig Unequipped"
+sfxinfo[sfx_nvild].caption = "Anvil Appeared"
+sfxinfo[sfx_nvilc].caption = "Anvil Crashed"
+sfxinfo[sfx_nvils].caption = "Anvil Dropping"
 
 -- VOX ---------------------------------------
 freeslot("sfx_givoc1", "sfx_givoc2", "sfx_givoc3", "sfx_givoc4") -- Jumps
@@ -94,6 +98,7 @@ states[S_GIGGLES_DASH] = { SPR_PLAY, SPR2_DASH, -1, nil, nil, nil, S_PLAY_FALL }
 
 -- Magimajigs & Other Mobjs ---------
 freeslot("S_HEARTRING", "S_MAJIGPNT1")
+freeslot("S_ANVIL_SPAWN", "S_ANVIL_IDLE", "S_ANVIL_FALL")
 
 states[S_HEARTRING] = {
     sprite = SPR_HRNG,
@@ -113,15 +118,36 @@ states[S_MAJIGPNT1] = {
     nextstate = S_MAJIGPNT1
 }
 
-states[S_WATCH_SPAWN] = {
+-- states[S_WATCH_SPAWN] = {
 
-}
+-- }
 
 states[S_ANVIL_SPAWN] = {
+    sprite = SPR_AVIL,
+    frame = A,
+    tics = 20,
+    action = nil,
+    nextstate = S_ANVIL_IDLE
+}
 
+states[S_ANVIL_IDLE] = {
+    sprite = SPR_AVIL,
+    frame = A,
+    tics = -1,
+    action = nil,
+    nextstate = S_NULL
+}
+
+states[S_ANVIL_FALL] = {
+    sprite = SPR_AVIL,
+    frame = B,
+    tics = -1,
+    action = nil,
+    nextstate = S_NULL
 }
 -- MOBJS --------------------------------------
 freeslot("MT_HEARTRING", "MT_PUREMAGIC", "MT_SCRAPPERMAGIC", "MT_MAJIGARROW")
+freeslot("MT_ANVIL")
 
 mobjinfo[MT_HEARTRING] = {
     doomednum = -1,
@@ -177,53 +203,53 @@ mobjinfo[MT_SCRAPPERMAGIC] = {
     flags = MF_NOBLOCKMAP|MF_MISSILE|MF_NOGRAVITY
 }
 
-mobjinfo[MT_DOV] = {
-    doomednum = -1,
-    spawnstate = S_DOV_SPAWN,
-    spawnhealth = 1000,
-    speed = 20*FU,
-    radius = 18*FU,
-    height = 16*FU,
-    mass = 25,
-    damage = 0,
-    flags = MF_SOLID|MF_SLIDEME|MF_SPECIAL
-}
+-- mobjinfo[MT_DOV] = {
+--     doomednum = -1,
+--     spawnstate = S_DOV_SPAWN,
+--     spawnhealth = 1000,
+--     speed = 20*FU,
+--     radius = 18*FU,
+--     height = 16*FU,
+--     mass = 25,
+--     damage = 0,
+--     flags = MF_SOLID|MF_SLIDEME|MF_SPECIAL
+-- }
 
-mobjinfo[MT_WATCH] = {
-    doomednum = -1,
-    spawnstate = S_WATCH_SPAWN,
-    spawnhealth = 1000,
-    speed = 10*FU,
-    radius = 15*FU,
-    height = 15*FU,
-    mass = 20,
-    damage = 0,
-    flags = MF_NOBLOCKMAP|MF_NOGRAVITY
-}
+-- mobjinfo[MT_WATCH] = {
+--     doomednum = -1,
+--     spawnstate = S_WATCH_SPAWN,
+--     spawnhealth = 1000,
+--     speed = 10*FU,
+--     radius = 15*FU,
+--     height = 15*FU,
+--     mass = 20,
+--     damage = 0,
+--     flags = MF_NOBLOCKMAP|MF_NOGRAVITY
+-- }
 
 mobjinfo[MT_ANVIL] = {
     doomednum = -1,
     spawnstate = S_ANVIL_SPAWN,
     spawnhealth = 1000,
-    speed = 24*FU,
-    radius = 20*FU,
-    height = 15*FU,
-    mass = 50,
-    damage = 100,
+    speed = 0,
+    radius = 50*FU,
+    height = 75*FU,
+    mass = DMG_CRUSHED,
+    damage = 1,
     flags = MF_SOLID|MF_SLIDEME
 }
 
-mobjinfo[MT_PACKLOON] = {
-    doomednum = -1,
-    spawnstate = S_PACKLOON_SPAWN,
-    spawnhealth = 1000,
-    speed = 0,
-    radius = 15*FU,
-    height = 20*FU,
-    mass = 30,
-    damage = 0,
-    flags = MF_NOGRAVITY
-}
+-- mobjinfo[MT_PACKLOON] = {
+--     doomednum = -1,
+--     spawnstate = S_PACKLOON_SPAWN,
+--     spawnhealth = 1000,
+--     speed = 0,
+--     radius = 15*FU,
+--     height = 20*FU,
+--     mass = 30,
+--     damage = 0,
+--     flags = MF_NOGRAVITY
+-- }
 
 -- mobjinfo[MT_FIREWORKS] = {
 --     doomednum = -1,

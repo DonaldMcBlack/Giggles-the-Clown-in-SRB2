@@ -1,8 +1,8 @@
 -- TODO -------------------------------------------
 -- Spin Attack
--- Working Magimajigs
+-- [Done] Working Magimajigs
 -- Charge spin attack for Scrapper
--- Fix the dive for Pure
+-- [Done] Fix the dive for Pure
 -- [Done]Dive jump for Pure
 -- Optional battle music
 ---------------------------------------------------
@@ -147,22 +147,6 @@ local function DoDustTrail(g)
 	dust.scale = g.scale
 end
 
--- local function SpawnPoundDust(mo, range)
--- 	local amount = 16
--- 	local another_angle = 360*(FU/amount)
-
--- 	for i = 1,amount do
--- 		local left = amount-(i-1)
--- 		local angle = fixangle(another_angle*left)
-
--- 		local z = (mo.height/2)-((mo.height/2)*P_MobjFlip(mo))
-
--- 		local particle = P_SpawnMobjFromMobj(mo, 0,0,z, MT_THOK)
--- 		particle.state = S_SPINDUST1
--- 		P_InstaThrust(particle, angle, range)
--- 	end
--- end
-
 Giggles.GroundPound = function(p, g, gigs)
 
 	if not gigs.groundpound.enabled then
@@ -188,13 +172,13 @@ Giggles.GroundPound = function(p, g, gigs)
 
                 if g.skin == "gigglesscrapper" then
                     -- SpawnPoundDust(g, FU*10)
-                    Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS, false, 16, FU*10, 0)
+                    Giggles.SpawnDustCircle(g, MT_DUST, 10 << FRACBITS, false, 16, FU*6/5, FU/4, FU, 0)
                     P_StartQuake(FU*10, 8)
                     S_StartSound(g, sfx_s3k5d)
                     
                 else
                     -- SpawnPoundDust(g, FU*8)
-                    Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS, false, 16, FU*8, 0)
+                    Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS, false, 16, FU, FU, FU, 0)
                 end
                 S_StartSound(g, gp_sounds[P_RandomRange(1, 3)])
                 p.pflags = $|PF_JUMPSTASIS
@@ -292,7 +276,7 @@ addHook("PlayerThink", function(p)
     end
 	
     -- Sprinting, since she's too slow
-	if gigs.sprinting and P_IsObjectOnGround(g) then
+	if gigs.sprinting and P_IsObjectOnGround(g) or p.powers[pw_sneakers] == 1 then
         DoDustTrail(g)
         p.normalspeed = skins[g.skin].normalspeed
     elseif not gigs.sprinting and P_IsObjectOnGround(g) then
@@ -314,8 +298,9 @@ end)
 
 addHook("MusicChange", function(oldmus, newmus) 
     if not Giggles_NET.musiclayers.layers then return end
-
+    
     for i in #Giggles_NET.musiclayers.layers do
+        if i ~= type("number") then break end
         if newmus == Giggles_NET.musiclayers.layers[i] then Giggles_NET.musiclayers.canplay = true
         else Giggles_NET.musiclayers.canplay = false end
 
@@ -421,7 +406,7 @@ addHook("AbilitySpecial", function(p)
     local g = p.mo
     local gigs = p.giggletable
 
-    if not (p.pflags & PF_THOKKED) 
+    if not (p.pflags & PF_THOKKED)
     and g.state ~= S_PLAY_SPINDASH then
         S_StartSound(g, sfx_emjmp2)
         Giggles_PlayVoice(g, p, P_RandomRange(sfx_givoc5, sfx_givoc8), 40)
@@ -468,3 +453,19 @@ addHook("LinedefExecute", function(line, mo)
 
     if gigs.alignment.phase ~= 2 and mo.skin ~= "giggles" then gigs.alignment.points = 0 end
 end, "INSTANEUTRAL")
+
+-- Reset values for Time Watch effects
+addHook("MobjThinker", function(mobj)
+	if mobj and mobj.valid
+	and not ((mobj.flags & MF_AMBIENT) or (mobj.flags & MF_NOTHINK) or (mobj.flags & MF_SCENERY)) then --exclude some mobjs in order to preserve processing power
+		if mobj.preslowxmom == nil then
+			mobj.preslowxmom = 0
+		end
+		if mobj.preslowymom == nil then
+			mobj.preslowymom = 0
+		end
+		if mobj.preslowzmom == nil then
+			mobj.preslowzmom = 0
+		end
+	end
+end, MT_NULL) --run this for everything

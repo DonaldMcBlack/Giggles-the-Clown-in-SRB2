@@ -84,7 +84,7 @@ addHook("PreThinkFrame", do
                     gigs.dash.enabled = true
                     gigs.dash.angle = g.angle
                     gigs.dash.aerial = false
-                    Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, true, 16, FU*4, p.drawangle)
+                    Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, true, 16, FU, FU, FU, p.drawangle)
                 end
 
                 -- Summoning state
@@ -149,7 +149,7 @@ addHook("PreThinkFrame", do
                     gigs.dash.enabled = true
                     gigs.dash.angle = g.angle
                     gigs.dash.aerial = true
-                    Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, true, 16, FU*4, p.drawangle)
+                    Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, true, 16, FU, FU, FU, p.drawangle)
                 end
             end
         end
