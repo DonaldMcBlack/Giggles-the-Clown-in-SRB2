@@ -1,17 +1,21 @@
 rawset(_G, "Giggles", {}) -- Global table for holding functions.
 
 rawset(_G, "Giggles_NET", {
+    startup = false,
     -- Gameplay Stuff
     inbossmap = false,
     playedbossintro = false,
     currentmap = nil,
     musiclayers = { enabled = true, canplay = true, layers = {[1] = "L", [2] = "N", [3] = "D"}},
     magicmobjlimit = 5,
+    magicmobjattribs = {
+        anvil = { ticcer = 0, landed = false }
+    },
+    ringenergylevels = { 30, 60, 90 },
 
     -- Options
     voice = true,
     hudtoggle = true,
-
     debugmode = true
 })
 
@@ -43,21 +47,25 @@ Giggles.Setup = function(p)
             justjumped = false,
 
             majigpointer = {
+                mobj = nil,
                 forwardmove = 0,
                 sidemove = 0,
+                upmove = 0,
+                originalyoffset = 137
             },
 
             hud = {
-                rings = {
-                    fixedscale = 2*FU/3,
-                    scale = 2*FU/3,
-                    count = 0
-                }
+                health = { x = 0, y = 0, scale = 2*FU/4 },
+                rings = {x = 186*FU, y = 5*FU, barscale = 2*FU/3, fixedscale = 2*FU/3, scale = 2*FU/3 },
+                leveluptimer = 0
             },
 
             -- Abilities
             dash = { enabled = false, timer = 10, timerref = 10, angle = 0, aerial = false },
             groundpound = { enabled = false, canperform = false, stuntime = 5, stuntimeref = 5 },
+
+            prevrings = 0,
+            ringenergy = { points = 0, count = 0, maxcount = 3, prevmaxcount = 3},
 
             abilitystates = {
                 -- Pure only -------------------
@@ -89,7 +97,8 @@ Giggles.Setup = function(p)
             magicmobjs = {
                 [0] = {
                     name = "TV",
-                    thingtype = MT_YELLOWSPRING,
+                    thingtype = MT_RING_BOX,
+                    icon = "G_MAJIG_TV",
                     amount = 5,
                     duration = 15
                 },
@@ -97,6 +106,7 @@ Giggles.Setup = function(p)
                 [1] = {
                     name = "Watch",
                     thingtype = MT_BUMPER,
+                    icon = "G_MAJIG_WATCH",
                     amount = 5,
                     duration = 15
                 },
@@ -104,6 +114,7 @@ Giggles.Setup = function(p)
                 [2] = {
                     name = "Anvil",
                     thingtype = MT_ANVIL,
+                    icon = "G_MAJIG_ANVIL",
                     amount = 5,
                     duration = 10
                 },
@@ -111,6 +122,7 @@ Giggles.Setup = function(p)
                 [3] = {
                     name = "Balloon",
                     thingtype = MT_BALLOON,
+                    icon = "G_MAJIG_BALLOON",
                     amount = 5,
                     duration = -1
                 },
@@ -118,6 +130,7 @@ Giggles.Setup = function(p)
                 [4] = {
                     name = "Fireworks",
                     thingtype = MT_EXPLODE,
+                    icon = "G_MAJIG_ROCKET",
                     amount = 5,
                     duration = -1
                 }

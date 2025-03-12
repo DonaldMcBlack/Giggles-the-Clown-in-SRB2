@@ -16,6 +16,25 @@ rawset(_G, "IsGiggles", function(g, p)
 	end
 end)
 
+-- Resets almost every property related to Giggles
+Giggles.ResetAll = function(p, gigs)
+    gigs.sprinting = false
+    gigs.justjumped = false
+    
+    gigs.majigpointer.mobj = nil
+
+    gigs.dash.enabled = false
+    gigs.groundpound.enabled = false
+
+    gigs.prevrings = 0
+    gigs.ringenergy.points = 0
+    gigs.ringenergy.maxcount = 3
+
+    gigs.abilitystates.handstand = false
+    gigs.abilitystates.summoning = false
+
+end
+
 Giggles.ManageHealth = function(gigs, oper, num)
     if oper == "add" or oper == "+" then
         gigs.healthpips = $+num

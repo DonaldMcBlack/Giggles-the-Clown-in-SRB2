@@ -229,6 +229,44 @@ Giggles.GroundPound = function(p, g, gigs)
     end
 end
 
+local function LevelByRings(p, gigs)
+    -- After Giggles collects a ring
+    if gigs.prevrings > p.rings then
+        gigs.prevrings = p.rings
+    elseif gigs.prevrings < p.rings then
+        gigs.ringenergy.points = $ + (p.rings - gigs.prevrings)
+        gigs.hud.rings.scale = 2*FU/2
+
+        if gigs.ringenergy.points > 9 then
+            gigs.ringenergy.count = tonumber(string.sub(tostring(gigs.ringenergy.points), 1, 1))
+
+            -- Keep it under the max amount
+            if gigs.ringenergy.count > gigs.ringenergy.maxcount then
+                gigs.ringenergy.count = gigs.ringenergy.maxcount
+            end
+        else
+            gigs.ringenergy.count = 0
+        end
+        gigs.prevrings = p.rings
+    end
+
+    -- Updates the maximum amount of bars
+    for i = #Giggles_NET.ringenergylevels, 1, -1 do
+        local v = Giggles_NET.ringenergylevels[i]
+        if p.rings >= v then
+            gigs.ringenergy.maxcount = 3 + (v/30)
+
+            if gigs.ringenergy.prevmaxcount < gigs.ringenergy.maxcount then
+                gigs.ringenergy.prevmaxcount = gigs.ringenergy.maxcount
+                gigs.hud.leveluptimer = 120
+            elseif gigs.ringenergy.prevmaxcount > gigs.ringenergy.maxcount then
+                gigs.ringenergy.prevmaxcount = gigs.ringenergy.maxcount
+            end
+            break
+        end
+    end
+end
+
 -- Main hook
 addHook("PlayerThink", function(p)
     if not (p.giggletable) then Giggles.Setup(p) return end -- No table? We'll fix that.
@@ -236,16 +274,14 @@ addHook("PlayerThink", function(p)
     local g = p.mo
     local gigs = p.giggletable
 
-    if not (IsGiggles(g, p)) then
-        
-    return end
+    -- We're not Giggles
+    if not (IsGiggles(g, p)) then Giggles.ResetAll(p, gigs) return end
 
     -- We are Giggles
 
-    if (p.playerstate == PST_DEAD) then
-        gigs.healthpips = 0
-    return end
+    LevelByRings(p, gigs)
 
+    -- Do some idle stuff
     if g.state == S_PLAY_WAIT and p.camerascale >= FU then
         p.camerascale = ease.linear(FU*1/10, $, FU)
     else
@@ -261,10 +297,11 @@ addHook("PlayerThink", function(p)
     if not P_IsObjectOnGround(g) and g.momz < 0 then
         gigs.fallmomz = g.momz
 		-- CONS_Printf(p, tostring(g.momz))
-    elseif not P_IsObjectOnGround(g) and g.momz > 0 then camera.momz = 0
+    elseif not P_IsObjectOnGround(g) and g.momz > 0 then
+        -- camera.momz = 0
     elseif abs(gigs.fallmomz) >= p.height/4 and (g.eflags & MFE_JUSTHITFLOOR) and not gigs.groundpound.enabled then
         S_StartSound(g, P_RandomRange(sfx_land1, sfx_land3))
-        Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, false, 8, FU*4, 0)
+        Giggles.SpawnDustCircle(g, MT_DUST, 8 << FRACBITS/2, false, 8, FU, FU, FU, 0)
         gigs.fallmomz = 0
     else
 	    gigs.fallmomz = 0
@@ -298,7 +335,7 @@ end)
 
 addHook("MusicChange", function(oldmus, newmus) 
     if not Giggles_NET.musiclayers.layers then return end
-    
+
     for i in #Giggles_NET.musiclayers.layers do
         if i ~= type("number") then break end
         if newmus == Giggles_NET.musiclayers.layers[i] then Giggles_NET.musiclayers.canplay = true
@@ -317,12 +354,20 @@ addHook("MapChange", function(map)
 end)
 
 addHook("MapLoad", function(map)
-    if Giggles_NET.inbossmap then 
+    if Giggles_NET.inbossmap then
         S_PauseMusic(consoleplayer)
-        S_StartSound(nil, sfx_stboss, consoleplayer) 
+        S_StartSound(nil, sfx_stboss, consoleplayer)
     end
 
     if not Giggles_NET.currentmap then Giggles_NET.currentmap = map end
+
+    for p in players.iterate() do
+        if not p.giggletable then
+            Giggles.Setup(p)
+        else
+            Giggles.ResetAll(p, p.giggletable)
+        end
+    end
 end)
 
 addHook("PlayerSpawn", function(p)
@@ -336,16 +381,16 @@ addHook("PlayerSpawn", function(p)
     end
 end)
 
-addHook("PlayerCanDamage", function(p, mobj) 
+addHook("PlayerCanDamage", function(p, mobj)
     if not IsGiggles(p.mo, p) then return end
     local g = p.mo
     local gigs = p.giggletable
 
-    if gigs.dash.enabled then 
+    if gigs.dash.enabled then
         if mobj.flags & MF_MONITOR then return true end
 
         if g.skin == "gigglesscrapper" then
-            if mobj.flags & MF_ENEMY then 
+            if mobj.flags & MF_ENEMY then
                 return true
             end
         end
@@ -358,7 +403,7 @@ addHook("MobjDamage", function(g, inf, src, dmg, dmgtype)
 
     local gigs = p.giggletable
 
-    if p and not (dmgtype & DMG_DEATHMASK)
+    if p and p.valid and not (dmgtype & DMG_DEATHMASK)
     and p.powers[pw_carry] ~= CR_NIGHTSMODE
     and not p.powers[pw_invulnerability]
     and not p.powers[pw_flashing]
@@ -367,13 +412,14 @@ addHook("MobjDamage", function(g, inf, src, dmg, dmgtype)
     and (not p.guard or p.guard <=0) then
         if 1 < gigs.healthpips then
 
-            if not p.powers[pw_shield] then p.powers[pw_shield] = SH_PITY
-            elseif p.rings <= 0 then 
+            if p.rings == 0 and not p.powers[pw_shield] then
                 p.powers[pw_shield] = SH_PITY
             end
 
+            gigs.ringenergy.points = $/2
+            if gigs.ringenergy.maxcount > 3 then gigs.ringenergy.maxcount = $-1 end
+
             Giggles.Knockback(p)
-            
             Giggles.ManageHealth(gigs, "-", 1)
             Giggles_PlayVoice(g, p, P_RandomRange(sfx_gipai1, sfx_gipai4), 75)
         else

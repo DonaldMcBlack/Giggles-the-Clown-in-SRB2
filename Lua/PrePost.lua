@@ -1,7 +1,22 @@
 local Giggles = Giggles
 local strong_flags = STR_FLOOR|STR_SPRING|STR_GUARD|STR_HEAVY
 
-local MagicmajigSpawner
+local function SpawnMajimajigPointer(p, g)
+    local mobj = P_SpawnMobjFromMobj(g, 0, 0, 0, MT_MAJIGARROW)
+
+
+    mobj.target = g
+    mobj.drawonlyforplayer = p
+    mobj.fuse = -1
+
+    mobj.spritebounce = 0
+    mobj.maxspritebounce = 2*FU
+    mobj.spritemomz = 2*FU
+
+    p.giggletable.majigpointer.mobj = mobj
+
+    S_StartSound(g, sfx_mjgeq)
+end
 
 addHook("PreThinkFrame", do
 
@@ -31,6 +46,7 @@ addHook("PreThinkFrame", do
 
             gigs.majigpointer.forwardmove = p.cmd.forwardmove
             gigs.majigpointer.sidemove = p.cmd.sidemove
+            gigs.majigpointer.upmove = gigs.jump
         end
 
         if g then
@@ -88,21 +104,21 @@ addHook("PreThinkFrame", do
                 end
 
                 -- Summoning state
+
+                local pointer = gigs.majigpointer.mobj
                 if gigs.c3 == 1 and not gigs.abilitystates.summoning then
                     gigs.abilitystates.summoning = true
-                    if not (MagicmajigSpawner and MagicmajigSpawner.valid) then 
-                        MagicmajigSpawner = P_SpawnMobjFromMobj(g, 0, 0, 0, MT_MAJIGARROW)
-                        MagicmajigSpawner.target = g
-                        MagicmajigSpawner.drawonlyforplayer = p
-                        S_StartSound(g, sfx_mjgeq)
+                    if not (pointer and pointer.valid) then
+                        SpawnMajimajigPointer(p, g)
                     end
-                elseif gigs.c3 < 1 and gigs.abilitystates.summoning then
-                    P_SpawnMobjFromMobj(MagicmajigSpawner, 0, 0, MagicmajigSpawner.height, gigs.magicmobjs[gigs.magicmobjspawn.selectednum].thingtype)
-                    P_SpawnMobjFromMobj(MagicmajigSpawner, 0, 0, MagicmajigSpawner.height, MT_MAJIGSPARK)
+                elseif gigs.c3 < 1 and gigs.abilitystates.summoning and pointer.valid then
+                    local thing = P_SpawnMobjFromMobj(pointer, 0, 0, pointer.height, gigs.magicmobjs[gigs.magicmobjspawn.selectednum].thingtype)
+                    thing.target = g
+                    P_SpawnMobjFromMobj(pointer, 0, 0, pointer.height, MT_MAJIGSPARK)
                     
                     local i = 0
                     while i < 20 do
-                        local particle = P_SpawnMobjFromMobj(MagicmajigSpawner, 0, 0, MagicmajigSpawner.height, MT_IVSP)
+                        local particle = P_SpawnMobjFromMobj(pointer, 0, 0, pointer.height, MT_IVSP)
                         particle.momx = P_RandomRange(-10, 10)*FU
                         particle.momy = P_RandomRange(-10, 10)*FU
                         particle.momz = P_RandomRange(-10, 10)*FU
@@ -113,11 +129,11 @@ addHook("PreThinkFrame", do
 
                     gigs.abilitystates.summoning = false
                     S_StartSound(g, sfx_mjguq)
-                    P_KillMobj(MagicmajigSpawner)
-                elseif gigs.c3 > 1 and gigs.spin == 1 and gigs.abilitystates.summoning then
+                    P_KillMobj(pointer)
+                elseif gigs.c3 > 1 and gigs.spin == 1 and gigs.abilitystates.summoning and pointer.valid then
                     gigs.abilitystates.summoning = false
                     S_StartSound(g, sfx_mjguq)
-                    P_KillMobj(MagicmajigSpawner)
+                    P_KillMobj(pointer)
                 end
             end
 
@@ -164,19 +180,24 @@ addHook("PreThinkFrame", do
 end)
 
 addHook("ThinkFrame", do
+    if not Giggles_NET.startup then
+        S_StartSound(nil, sfx_load)
+        Giggles_NET.startup = true
+    end
+    
     for p in players.iterate() do
         if not IsGiggles(p.mo, p) then return end
 
         local gigs = p.giggletable
-        if not gigs then continue end
+        if not gigs or p.playerstate == PST_DEAD then continue end
 
         local g = p.mo
         
         -- Jumping (Sounds crazy, right?)
         if P_IsObjectOnGround(g) then 
             gigs.grounded = true
-            gigs.falling = false  
-            gigs.justjumped = false    
+            gigs.falling = false
+            gigs.justjumped = false
             
             if not gigs.dash.timer and not gigs.dash.enabled then gigs.dash.timer = gigs.dash.timerref end
         elseif not p.powers[pw_carry] 
@@ -209,8 +230,10 @@ addHook("PostThinkFrame", do
         if not gigs then continue end
         local g = p.mo
 
-        if gigs.abilitystates.summoning and MagicmajigSpawner.valid then
-            p.drawangle = R_PointToAngle2(g.x, g.y, MagicmajigSpawner.x, MagicmajigSpawner.y)
+        -- Summoning State
+        local pointer = gigs.majigpointer.mobj
+        if gigs.abilitystates.summoning and pointer.valid then
+            p.drawangle = R_PointToAngle2(g.x, g.y, pointer.x, pointer.y)
         end
     end
 end)

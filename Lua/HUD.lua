@@ -48,12 +48,12 @@ local function DrawHealth(v, p, g, gigs, color)
 	-- Draw HP bar first
 	local patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "HPBAR"))
 	
-	v.drawScaled(0, 0, 2*FU/4, patch, healthflags|backflag)
+	v.drawScaled(gigs.hud.health.x, gigs.hud.health.y, 2*FU/4, patch, healthflags|backflag)
 	
 	-- Then face
 	patch = v.cachePatch((alignment_value[gigs.alignment.phase] + "FACE" + tostring(GetFaceStatus(gigs))))
 	
-	v.drawScaled(35*FU, 40*FU, 2*FU/4, patch, healthflags|frontflag, color)
+	v.drawScaled(gigs.hud.health.x+35*FU, gigs.hud.health.y+40*FU, 2*FU/4, patch, healthflags|frontflag, color)
 	
     for i = 1, gigs.maxhealthpips do
 
@@ -76,13 +76,13 @@ local function DrawHealth(v, p, g, gigs, color)
 
         local incre = (FixedMul(FixedDiv(maxspace, gigs.maxhealthpips*FU)*j, FU*4/5))
 
-        v.drawScaled(maxspace-(incre)+xoff, 40*FU+add, FU/4, patch, healthflags|frontflag)
+        v.drawScaled(maxspace-(incre)+xoff+gigs.hud.health.x, gigs.hud.health.y+40*FU+add, FU/4, patch, healthflags|frontflag)
     end
 
     v.drawString(55, 55, ("x ") + p.lives, V_SNAPTOLEFT|V_SNAPTOTOP|V_HUDTRANS|V_PERPLAYER)
 end
 
-local function DrawRings(v, p)
+local function DrawRings(v, p, gigs)
 
     if (customhud.CheckType("rings") ~= modname) then return end
 
@@ -90,20 +90,29 @@ local function DrawRings(v, p)
         return
     end
 
-    p.giggletable.hud.rings.scale = ease.outcubic(FU/4, p.giggletable.hud.rings.scale, p.giggletable.hud.rings.fixedscale)
-    local scale = p.giggletable.hud.rings.scale
+    local patch = v.cachePatch(alignment_value[gigs.alignment.phase] + "RINGBG")
+    v.drawScaled(gigs.hud.rings.x, gigs.hud.rings.y, gigs.hud.rings.barscale, patch, V_SNAPTORIGHT|V_SNAPTOTOP|V_HUDTRANSHALF|V_PERPLAYER)
 
-    local patch = v.cachePatch("G_RING")
+    if gigs.hud.rings.scale ~= gigs.hud.rings.fixedscale then
+        gigs.hud.rings.scale = ease.outcubic(FU/4, gigs.hud.rings.scale, gigs.hud.rings.fixedscale)
+    end
+
+    local scale = gigs.hud.rings.scale
     local eflag
 
     if p.spectator then eflag = V_HUDTRANSHALF
     else eflag = V_HUDTRANS end
 
-    v.drawScaled(260*FU, 35*FU, scale, patch, V_SNAPTORIGHT|V_SNAPTOTOP|eflag|V_PERPLAYER)
+    patch = v.cachePatch("G_RING")
+    v.drawScaled(gigs.hud.rings.x+73*FU, gigs.hud.rings.y+30*FU, scale, patch, V_SNAPTORIGHT|V_SNAPTOTOP|eflag|V_PERPLAYER)
 
     local rings = tostring(p.rings)
-
     v.drawString(260, 30, rings, V_SNAPTORIGHT|V_SNAPTOTOP|eflag|V_PERPLAYER, "center")
+
+    if gigs.hud.leveluptimer then
+        v.drawString(160, 50, "LEVEL UP!", V_SNAPTOTOP|V_PERPLAYER, "center")
+        gigs.hud.leveluptimer = $-1
+    end
 end
 
 local function DrawMagicMobjs(v, p)
@@ -112,9 +121,15 @@ local function DrawMagicMobjs(v, p)
 
     local gigs = p.giggletable
 
-    local objectname = gigs.magicmobjs[gigs.magicmobjspawn.selectednum].name
+    local majigcost = gigs.ringenergy.count.."/"..gigs.ringenergy.maxcount
+    local majigslot = v.cachePatch("G_MAJIGSLOT")
+    local majigicon = v.cachePatch(gigs.magicmobjs[gigs.magicmobjspawn.selectednum].icon)
 
-    v.drawString(250, 30, objectname, V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|V_PERPLAYER, "left")
+    if not majigicon then majigicon = v.cachePatch("G_MAJIG_NULL") end
+
+    v.drawScaled(gigs.hud.rings.x+30*FU, gigs.hud.rings.y+25*FU, gigs.hud.rings.barscale-(FU/5), majigslot, V_SNAPTORIGHT|V_HUDTRANS|V_PERPLAYER)
+    v.drawScaled(gigs.hud.rings.x+30*FU, gigs.hud.rings.y+25*FU, gigs.hud.rings.barscale-(FU/5), majigicon, V_SNAPTORIGHT|V_HUDTRANS|V_PERPLAYER)
+    v.drawString(gigs.hud.rings.x+215, 30, majigcost, V_SNAPTORIGHT|V_SNAPTOBOTTOM|V_HUDTRANS|V_PERPLAYER, "center")
 end
 
 local function DrawDebugInfo(v, p)
@@ -129,7 +144,7 @@ local function DrawDebugInfo(v, p)
     elseif gigs.alignment.phase == 3 then phasename = "Scrapper"
     else phasename = "NULL" end
 
-    v.drawString(50, 140, "Alignment: " + gigs.alignment.points + " (" + phasename + ")", debugflags, "center")
+    v.drawString(0, 140, "Alignment: "..gigs.alignment.points.." ("..phasename..")".."\nRing Energy: "..gigs.ringenergy.points, debugflags, "left")
 end
 
 -- hud.add(function(v, p)
@@ -184,14 +199,9 @@ addHook("HUD", function(v, p, cam)
 
             if not dontdrawgiggleshud then
                 DrawHealth(v, p, g, gigs, color)
-                DrawRings(v, p)
+                DrawRings(v, p, gigs)
                 DrawMagicMobjs(v, p)
                 DrawDebugInfo(v, p)
-            end
-
-            if gigs.hud.rings.count ~= p.rings then
-                gigs.hud.rings.scale = 2*FU/2
-                gigs.hud.rings.count = p.rings
             end
         else -- Not Giggles
             customhud.SetupItem("rings", unmodname)
