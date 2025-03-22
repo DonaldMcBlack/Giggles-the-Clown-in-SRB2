@@ -61,10 +61,10 @@ Giggles.Dash = function(g, p, gigs)
             g.flags = $ & ~MF_NOGRAVITY
             if g.skin == "gigglesscrapper" then p.powers[pw_strong] = $ & ~dshstrong_flags end
 
-            if gigs.jump == 1 and not gigs.justjumped then 
+            if gigs.jump == 1 and not gigs.justjumped then
             
-                P_DoJump(p, true) 
-                g.momx = $%2 
+                P_DoJump(p, true)
+                g.momx = $%2
                 g.momy = $%2
                 gigs.justjumped = true
                 S_StartSound(g, sfx_emjmp)
@@ -74,11 +74,11 @@ Giggles.Dash = function(g, p, gigs)
             return
         end
         
-        if gigs.dash.timer then 
+        if gigs.dash.timer then
             p.pflags = $|PF_STASIS
             g.flags = $|MF_NOGRAVITY
 
-            P_InstaThrust(g, gigs.dash.angle, p.normalspeed*2)
+            P_InstaThrust(g, gigs.dash.angle, skins[g.skin].normalspeed)
             local ghost = P_SpawnGhostMobj(g)
             ghost.fuse = 5
             ghost.scalespeed = FU/15
@@ -97,9 +97,13 @@ Giggles.Dash = function(g, p, gigs)
             gigs.dash.enabled = false
             gigs.dash.timer = gigs.dash.timerref
 
-            if p.cmd.forwardmove == 0 and p.cmd.sidemove == 0 then
+            -- CONS_Printf(p, gigs.majigpointer.forwardmove..","..gigs.majigpointer.sidemove)
+
+            if gigs.majigpointer.forwardmove == 0 and gigs.majigpointer.sidemove == 0 then
                 g.momx = 0
                 g.momy = 0
+
+                -- CONS_Printf(p, "Stop")
             end
 
             -- Remove Scrapper's strong flags
@@ -333,11 +337,11 @@ addHook("PlayerThink", function(p)
     end
 end)
 
-addHook("MusicChange", function(oldmus, newmus) 
+addHook("MusicChange", function(oldmus, newmus)
     if not Giggles_NET.musiclayers.layers then return end
 
-    for i in #Giggles_NET.musiclayers.layers do
-        if i ~= type("number") then break end
+    for i, v in ipairs(Giggles_NET.musiclayers.layers) do
+        if v ~= type("number") or not S_MusicExists(v) then break end
         if newmus == Giggles_NET.musiclayers.layers[i] then Giggles_NET.musiclayers.canplay = true
         else Giggles_NET.musiclayers.canplay = false end
 
@@ -345,20 +349,9 @@ addHook("MusicChange", function(oldmus, newmus)
     end
 end)
 
-addHook("MapChange", function(map)
-    if mapheaderinfo[map].bonustype == 1 then
-        Giggles_NET.inbossmap = true
-    else Giggles_NET.inbossmap = false end
-
-    Giggles_NET.currentmap = map
-end)
+addHook("MapChange", function(map) Giggles_NET.nextmap = map end)
 
 addHook("MapLoad", function(map)
-    if Giggles_NET.inbossmap then
-        S_PauseMusic(consoleplayer)
-        S_StartSound(nil, sfx_stboss, consoleplayer)
-    end
-
     if not Giggles_NET.currentmap then Giggles_NET.currentmap = map end
 
     for p in players.iterate() do

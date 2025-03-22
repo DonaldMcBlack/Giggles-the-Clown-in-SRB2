@@ -6,7 +6,8 @@ rawset(_G, "Giggles_NET", {
     inbossmap = false,
     playedbossintro = false,
     currentmap = nil,
-    musiclayers = { enabled = true, canplay = true, layers = {[1] = "L", [2] = "N", [3] = "D"}},
+    nextmap = nil,
+    musiclayers = { enabled = true, canplay = true, layers = {}},
     magicmobjlimit = 5,
     magicmobjattribs = {
         anvil = { ticcer = 0, landed = false }
@@ -134,7 +135,10 @@ Giggles.Setup = function(p)
                     amount = 5,
                     duration = -1
                 }
-            }
+            },
+
+            -- Other techincal stuff
+            O_layersloaded = false
         }
     end
     return true

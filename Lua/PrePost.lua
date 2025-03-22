@@ -28,6 +28,25 @@ addHook("PreThinkFrame", do
 
         local g = p.mo
 
+        -- Music Layers
+        if Giggles_NET.currentmap ~= Giggles_NET.nextmap then -- For continuously switching maps
+
+            Giggles_NET.currentmap = Giggles_NET.nextmap
+            if mapheaderinfo[Giggles_NET.currentmap].bonustype == 1 then
+                Giggles_NET.inbossmap = true
+
+                S_PauseMusic(p)
+                S_StartSound(nil, sfx_stboss, p)
+            else
+                Giggles_NET.inbossmap = false
+                Giggles.LoadMusicLayers(Giggles_NET.currentmap)
+            end
+
+        elseif Giggles_NET.currentmap and not gigs.O_layersloaded then -- First time loading in
+            Giggles.LoadMusicLayers(Giggles_NET.currentmap)
+            gigs.O_layersloaded = true
+        end
+
         Giggles.AlignmentCheck(p, gigs)
 
         if not (p.powers[pw_nocontrol]==1 and g) then
